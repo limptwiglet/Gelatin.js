@@ -5,16 +5,22 @@
 
 	<title>Gelatin.js tests</title>
 	<link rel="stylesheet" href="vendor/mocha.css" type="text/css" media="screen" charset="utf-8">
+	<script src="vendor/mootools-core-1.4.5.js"></script>
+	<script src="../gelatin.js"></script>
 	<script src="vendor/mocha.js"></script>
 	<script src="vendor/chai.js"></script>
 	<script>
-		mocha.setup('bdd');
+		mocha.setup({
+			ui: 'bdd',
+			ignoreLeaks: true
+		});
 	</script>
-	<script src="tests/mixins.js"></script>
-	<script src="tests/model.js"></script>
+	<script src="tests/global.js"></script>
 	<script>
 		window.onload = function () {
-			mocha.run();
+			mocha.run({
+				ignoreLeaks: true	
+			});
 		};
 	</script>
 </head>
