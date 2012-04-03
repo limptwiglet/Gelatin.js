@@ -48,4 +48,78 @@ describe('global gelatin helpers and classes', function () {
 			done();
 		});
 	});
+
+
+	describe('Object', function () {
+		it('should have get and set methods', function (done) {
+			var obj = new Gelatin.Object({
+				fname: 'Mark',
+				lname: 'Gerrard'
+			});
+
+			expect(obj.get).to.exist;	
+			expect(obj.set).to.exist;	
+			expect(obj.get('fname')).to.eql(obj.fname);
+			obj.set('fname', 'Bill');
+			expect(obj.get('fname')).to.eql('Bill');
+			done();	
+		});
+
+
+		it('should have observerable properties', function (done) {
+			var obj = new Gelatin.Object({
+				fname: 'Mark',
+				lname: 'Gerrard'
+			});
+
+			obj.addObserver('fname', function (type, key, value) {
+				expect(type).to.eql('change');
+				expect(key).to.eql('fname');
+				expect(value).to.eql('John');
+
+				done();
+			});
+
+			obj.set('fname', 'John');
+		});
+
+		it('should be able to remove observers', function (done) {
+			var obj = new Gelatin.Object({
+				fname: 'Mark',
+				lname: 'Gerrard'
+			});
+
+			var observer1 = function () {};
+			var observer2 = function () {};
+
+			obj.addObserver('fname', observer1);
+			obj.addObserver('fname', observer2);
+
+			expect(obj._observers['fname']).to.have.length(2);
+
+			obj.removeObserver('fname', observer1);
+
+			expect(obj._observers['fname']).to.have.length(1);
+
+			var o = obj._observers['fname']
+			for (var i = 0, l = o.length; i < l; i++) {
+				if (o[i] === observer1) {
+					throw new Error('Observer not removed correctly');
+				}
+			}
+
+			obj.removeObserver('fname', observer2);
+
+			expect(obj._observers['fname']).to.have.length(0);
+
+			done();
+		});
+
+		it('should not trigger observers if properties done change value', function () {
+			var obj = new Gelatin.Object({
+				fname: 'Mark',
+				lname: 'Gerrard'
+			});
+		});
+	});
 });
