@@ -20,6 +20,31 @@ describe('global gelatin helpers and classes', function () {
 			expect(Gelatin.get(obj, 'fullName')).to.eql(obj.fname + ' ' + obj.lname);
 			done();
 		});
+
+		it('should get a property at a path "name.first"', function (done) {
+			var obj = {
+				name: {
+					first: 'Mark'
+				},
+				foo: {
+					bar: {
+						baz: {
+							bar: 'test'
+						},
+
+						foo: Gelatin.computed(function () {
+							return 'test';
+						})
+					}
+				}
+			};
+
+			expect(Gelatin.get(obj, 'name.first')).to.eql(obj.name.first);
+			expect(Gelatin.get(obj, 'foo.bar.baz.bar')).to.eql(obj.foo.bar.baz.bar);
+			expect(Gelatin.get(obj, 'foo.bar.foo')).to.eql('test');
+			expect(Gelatin.get(obj, 'foo.bar2')).to.not.exist;
+			done();
+		});
 	});
 
 	describe('set', function () {
@@ -115,7 +140,7 @@ describe('global gelatin helpers and classes', function () {
 			done();
 		});
 
-		it('should not trigger observers if properties done change value', function () {
+		it('should not trigger observers if properties hasnt changed value', function () {
 			var obj = new Gelatin.Object({
 				fname: 'Mark',
 				lname: 'Gerrard'

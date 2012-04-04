@@ -4,10 +4,30 @@
 	// Setup our Gelatin namespace
 	var Gelatin = root.Gelatin = {};
 
+
+	/**
+	 * Returns the property at the given path
+	 *
+	 * @param {Object} - The object to get the property from
+	 * @param {String} - The path or property to get
+	 * @return Returns the property
+	 */
 	var get = Gelatin.get = function (obj, key) {
+		var path = ~key.indexOf('.') ? key.split('.') : false;
+
+		if (path) {
+			var root = obj;
+
+			while(path.length) {
+				root = get(root, path.shift());
+			}
+
+			return root;
+		}
+
 		var value = obj[key];
 
-		if (typeOf(value) === 'object') {
+		if (typeOf(value) === 'object' && 'get' in value) {
 			value = value.get(obj, key);
 		}
 
