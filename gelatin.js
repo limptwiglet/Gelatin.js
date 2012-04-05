@@ -185,7 +185,7 @@
 
 		options: {
 			tagName: 'div',
-			id: 'test'
+			id: ''
 		},
 
 		initialize: function(options) {
@@ -199,8 +199,34 @@
 
 			this.setOptions(options);
 			this.el = new Element(this.options.tagName, {
-				id: this.options.id
+				id: this.options.id				
+			});
+		},
+
+		remove: function() {
+
+			this.el.destroy();
+		}
+	});
+
+	Gelatin.View.Button = new Class({
+		Extends: Gelatin.View,
+
+		options: {
+			className: 'button',
+			tagName: 'a',
+			href: '#'
+		},
+
+		render: function(options) {
+
+			this.setOptions(options);
+			this.el = new Element(this.options.tagName, {
+				id: this.options.id,
+				'class': this.options.className,
+				href: this.options.href
 			});
 		}
 	});
+
 })(this);
