@@ -1,41 +1,44 @@
 describe('Model', function () {
+	var MyModel = new Class({
+		Extends: Gelatin.Model,
 
+		defaults: {
+			name: 'Mark',
+			age: 20
+		}
+	});
 
-	it('should observe all passed in properties', function (done) {
-		var model = new Gelatin.Model({
-			fname: 'Mark',
-			lname: 'Gerrard'
-		});
+	it('should mark a new record as being dirty', function (done) {
+		var model = new MyModel();
 
-		expect(model._observers).to.have.property('fname');
-		expect(model._observers.fname).to.have.length(1);
-		expect(model._observers).to.have.property('lname');
-		expect(model._observers.lname).to.have.length(1);
+		expect(model.get('isDirty')).to.be.ok;
+
 		done();
 	});
 
 
-	it('should be set as dirty when creating new model', function (done) {
-		var model = new Gelatin.Model({
-		});
+	it('should create data with defaults', function (done) {
+		var model = new MyModel({name: 'Bill'});
 
-		expect(model.isDirty).to.be.ok;
-		expect(model.isClean).to.be.not.ok;
+		expect(model.get('name')).to.eql('Bill');
+		expect(model.get('age')).to.eql(20);
+
 		done();
 	});
 
-	it('should change isDirty & isClean when data changes', function (done) {
-		var model = new Gelatin.Model({
-			fname: 'Test'
-		});
+	it('should get a unique client id', function (done) {
+		var model1 = new MyModel();
+		var model2 = new MyModel();
 
-		model.isDirty = false;
-		model.isClean = true;
+		expect(model1.get('cId')).to.not.eql(model2.get('cId'));
 
-		model.set('fname', 'test');
-		expect(model.isDirty).to.be.ok;
-		expect(model.isClean).to.be.not.ok;
+		done();
+	});
 
+	it('should return a clean data object', function (done) {
+		var model = new MyModel({});
+
+		expect(model.get('data')).to.eql(MyModel.defaults);
 		done();
 	});
 });
