@@ -234,23 +234,31 @@
 		},
 
 		initialize: function(options) {
-
 			this.setOptions(options);
 			this.el;
 			this.render();
 		},
 
 		render: function(options) {
-
 			this.setOptions(options);
 			this.el = new Element(this.options.tagName, {
-				id: this.options.id				
+				id: this.options.id
+
 			});
+
+			return this;
 		},
 
-		remove: function() {
+		remove: function() {			
+			this.el.dispose();
 
-			this.el.destroy();
+			return this;
+		},
+
+		inject: function(root) {		
+			this.el.inject(root);
+
+			return this;
 		}
 	});
 
@@ -264,13 +272,14 @@
 		},
 
 		render: function(options) {
-
 			this.setOptions(options);
 			this.el = new Element(this.options.tagName, {
 				id: this.options.id,
 				'class': this.options.className,
 				href: this.options.href
 			});
+			
+			return this;
 		}
 	});
 
