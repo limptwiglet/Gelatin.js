@@ -90,6 +90,20 @@ describe('global gelatin helpers and classes', function () {
 			done();	
 		});
 
+		it('should merge passed in properties', function (done) {
+			var obj = {
+				fname: 'test',
+				lname: 'test',
+				age: 20
+			};
+
+			var object = new Gelatin.Object(obj);
+			expect(object.get('fname')).to.have.eql(obj.fname);
+			expect(object.get('lname')).to.have.eql(obj.lname);
+			expect(object.get('age')).to.have.eql(obj.age);
+
+			done();
+		});
 
 		it('should have observerable properties', function (done) {
 			var obj = new Gelatin.Object({
@@ -106,6 +120,27 @@ describe('global gelatin helpers and classes', function () {
 			});
 
 			obj.set('fname', 'John');
+		});
+
+		it('should be able to watch multiple properties', function (done) {
+			var obj = new Gelatin.Object({
+				fname: 'Mark',
+				lname: 'Gerrard'
+			});
+
+			var c = 0;
+
+			// TODO: Add proper test for key
+			obj.addObserver(['fname', 'lname'], function (type, key, value) {
+				expect(type).to.eql('change');
+				expect(obj[key]).to.eql(value);
+
+				if (++c >= 2)
+					done();
+			});
+
+			obj.set('fname', 'John');
+			obj.set('lname', 'Mark');
 		});
 
 		it('should be able to remove observers', function (done) {
@@ -140,11 +175,18 @@ describe('global gelatin helpers and classes', function () {
 			done();
 		});
 
-		it('should not trigger observers if properties hasnt changed value', function () {
+		it('should not trigger observers if properties hasnt changed value', function (done) {
 			var obj = new Gelatin.Object({
 				fname: 'Mark',
 				lname: 'Gerrard'
 			});
+
+			obj.addObserver('fname', function () {
+				throw new Error('Observer triggered, fail!');
+			});
+
+			obj.set('fname', obj.get('fname'));
+			done();
 		});
 	});
 });

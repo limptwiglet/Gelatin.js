@@ -6,6 +6,18 @@
 
 
 	/**
+	 * Generates a uniqui id
+	 *
+	 * @param {String} - Prefix the id
+	 */
+	var curCid = 0;
+	var getCid = function (prefix) {
+		var id = curCid++;
+		return prefix ? prefix + id : id;
+	};
+
+
+	/**
 	 * Returns the property at the given path
 	 *
 	 * @param {Object} - The object to get the property from
@@ -42,11 +54,11 @@
 			return prop.set(obj, key, value);
 		}
 
-		obj[key] = value;
+		return obj[key] = value;
 	};
 
 
-	Gelatin.ComputedProperty = new Class({
+	var ComputedProperty = Gelatin.ComputedProperty = new Class({
 		Implements: [Options],
 
 		options: {
@@ -75,12 +87,12 @@
 		}
 	});
 
-	Gelatin.computed = function () {
-		var computed = new Gelatin.ComputedProperty(arguments[0]);
+	var computed = Gelatin.computed = function () {
+		var computed = new ComputedProperty(arguments[0]);
 		return computed;
 	};
 
-	Gelatin.Object = new Class({
+	var Obj = Gelatin.Object = new Class({
 		Implements: [Events],
 
 		_observers: {},
@@ -96,6 +108,14 @@
 		},
 
 		addObserver: function (key, func) {
+			if (typeOf(key) === 'array') {
+				key.each(function (k) {
+					this.addObserver(k, func);
+				}.bind(this));
+
+				return;
+			}
+
 			this._observers[key] = this._observers[key] || [];
 			this._observers[key].push(func);
 		},
@@ -131,11 +151,35 @@
 		set: function (key, value) {
 			var oldValue = this.get(key);
 
-
 			if (oldValue !== value) {
-				set(this, key, value);
+				value = set(this, key, value);
 				this.fireEvent('prop:change', [key, value]);
 			}
+
+			return value;
 		}
+	});
+
+	Gelatin.Model = new Class({
+		Extends: Obj,
+
+		isDirty: true,
+		isClean: false,
+
+		cId: getCid(),
+
+		initialize: function (props) {
+			this.parent(props);
+			this.addObserver(Object.keys(props), this._dataChange.bind(this));
+		},
+
+		_dataChange: function (type, key, value) {
+			this.set('isDirty', true);
+			this.set('isClean', false);
+		}
+	});
+
+
+	Gelatin.View = new Class({
 	});
 })(this);
