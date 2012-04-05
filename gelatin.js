@@ -181,5 +181,26 @@
 
 
 	Gelatin.View = new Class({
+		Implements: [Options],
+
+		options: {
+			tagName: 'div',
+			id: 'test'
+		},
+
+		initialize: function(options) {
+
+			this.setOptions(options);
+			this.el;
+			this.render();
+		},
+
+		render: function(options) {
+
+			this.setOptions(options);
+			this.el = new Element(this.options.tagName, {
+				id: this.options.id
+			});
+		}
 	});
 })(this);
