@@ -148,30 +148,75 @@
 			}
 		},
 
-		set: function (key, value) {
+		set: function (key, value, silent) {
 			var oldValue = this.get(key);
 
 			if (oldValue !== value) {
 				value = set(this, key, value);
-				this.fireEvent('prop:change', [key, value]);
+
+				if (silent == undefined || slient != true)
+					this.fireEvent('prop:change', [key, value]);
 			}
 
 			return value;
 		}
 	});
 
+	Gelatin.Store = new Class({
+		Extends: Obj,
+
+		data: {},
+
+		initialize: function () {
+			
+		},
+
+		createRecord: function (type, data) {
+			var record = new type(this);
+			record.cId = getCid();
+		}
+	});
+
+	/**
+	 * Models your data from a data source
+	 */
 	Gelatin.Model = new Class({
 		Extends: Obj,
 
 		isDirty: true,
 		isClean: false,
 
-		cId: getCid(),
+		store: null,
 
-		initialize: function (props) {
-			this.parent(props);
-			this.addObserver(Object.keys(props), this._dataChange.bind(this));
+		// The attributes this model will have
+		attributes: {},
+
+		// Default values for the attributes
+		defaults: {},
+
+		initialize: function (data) {
+			this.cId = getCid();
+
+			this.data = this.createData(data);
+
+			return this;
 		},
+
+		get: function (key) {
+			if (key in this.data) {
+				return get(this.data, key);
+			}
+
+			return get(this, key);
+		},
+
+		createData: function (data) {
+			return Object.merge(this.defaults, data || {});
+		},
+
+		json: new ComputedProperty(function () {
+			return Object.clone(this.data);
+		}),
 
 		_dataChange: function (type, key, value) {
 			this.set('isDirty', true);
