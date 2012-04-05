@@ -38,7 +38,9 @@ describe('Model', function () {
 	it('should return a clean data object', function (done) {
 		var model = new MyModel({});
 
-		expect(model.get('data')).to.eql(MyModel.defaults);
+		var data = model.get('json');
+		expect(data.age).to.eql(model.defaults.age);
+		expect(data.name).to.eql(model.defaults.name);
 		done();
 	});
 });

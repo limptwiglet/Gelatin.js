@@ -172,8 +172,8 @@
 		},
 
 		createRecord: function (type, data) {
-			var record = new type();
-			store = this;
+			var record = new type(this);
+			record.cId = getCid();
 		}
 	});
 
@@ -188,18 +188,35 @@
 
 		store: null,
 
+		// The attributes this model will have
+		attributes: {},
+
+		// Default values for the attributes
 		defaults: {},
 
 		initialize: function (data) {
 			this.cId = getCid();
+
 			this.data = this.createData(data);
 
 			return this;
 		},
 
-		createData: function (data) {
-			return Object.merge(this.defaults, data);
+		get: function (key) {
+			if (key in this.data) {
+				return get(this.data, key);
+			}
+
+			return get(this, key);
 		},
+
+		createData: function (data) {
+			return Object.merge(this.defaults, data || {});
+		},
+
+		json: new ComputedProperty(function () {
+			return Object.clone(this.data);
+		}),
 
 		_dataChange: function (type, key, value) {
 			this.set('isDirty', true);
