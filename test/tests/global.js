@@ -123,8 +123,7 @@ describe('global gelatin helpers and classes', function () {
 				lname: 'Gerrard'
 			});
 
-			obj.addObserver('fname', function (type, key, value) {
-				expect(type).to.eql('change');
+			obj.addEvent('change:fname', function (key, value) {
 				expect(key).to.eql('fname');
 				expect(value).to.eql('John');
 
@@ -132,27 +131,6 @@ describe('global gelatin helpers and classes', function () {
 			});
 
 			obj.set('fname', 'John');
-		});
-
-		it('should be able to watch multiple properties', function (done) {
-			var obj = new Gelatin.Object({
-				fname: 'Mark',
-				lname: 'Gerrard'
-			});
-
-			var c = 0;
-
-			// TODO: Add proper test for key
-			obj.addObserver(['fname', 'lname'], function (type, key, value) {
-				expect(type).to.eql('change');
-				expect(obj[key]).to.eql(value);
-
-				if (++c >= 2)
-					done();
-			});
-
-			obj.set('fname', 'John');
-			obj.set('lname', 'Mark');
 		});
 
 		it('should be able to remove observers', function (done) {
@@ -164,25 +142,8 @@ describe('global gelatin helpers and classes', function () {
 			var observer1 = function () {};
 			var observer2 = function () {};
 
-			obj.addObserver('fname', observer1);
-			obj.addObserver('fname', observer2);
-
-			expect(obj._observers['fname']).to.have.length(2);
-
-			obj.removeObserver('fname', observer1);
-
-			expect(obj._observers['fname']).to.have.length(1);
-
-			var o = obj._observers['fname']
-			for (var i = 0, l = o.length; i < l; i++) {
-				if (o[i] === observer1) {
-					throw new Error('Observer not removed correctly');
-				}
-			}
-
-			obj.removeObserver('fname', observer2);
-
-			expect(obj._observers['fname']).to.have.length(0);
+			obj.removeEvent('fname', observer1);
+			obj.removeEvent('fname', observer2);
 
 			done();
 		});
@@ -193,7 +154,7 @@ describe('global gelatin helpers and classes', function () {
 				lname: 'Gerrard'
 			});
 
-			obj.addObserver('fname', function () {
+			obj.addEvent('change:fname', function () {
 				throw new Error('Observer triggered, fail!');
 			});
 

@@ -101,57 +101,12 @@
 	var Obj = Gelatin.Object = new Class({
 		Implements: [Events],
 
-		_observers: {},
-
 		initialize: function (props) {
 			Object.append(this, props);
-
-			this.addEvent('prop:change', this.triggerObservers.bind(this, 'change'));
 		},
 
 		get: function (key) {
 			return get(this, key);
-		},
-
-		addObserver: function (key, func) {
-			if (typeOf(key) === 'array') {
-				key.each(function (k) {
-					this.addObserver(k, func);
-				}.bind(this));
-
-				return;
-			}
-
-			this._observers[key] = this._observers[key] || [];
-			this._observers[key].push(func);
-		},
-
-		removeObserver: function (key, func) {
-			var o = this._observers[key];
-
-			if (!o) return;
-
-			var l = o.length, i = 0;
-
-			for (; i < l; i++) {
-				if (o[i] === func) {
-					o.splice(i, 1);
-				}
-			}
-		},
-
-		triggerObservers: function (type, key, value) {
-			var o = this._observers[key];
-
-			if (!o) return;
-
-			var l = o.length, i = 0;
-
-			if (l) {
-				for (; i < l; i++) {
-					o[i].call(this, type, key, value);
-				}
-			}
 		},
 
 		set: function (key, value, silent) {
@@ -161,7 +116,7 @@
 				value = set(this, key, value);
 
 				if (silent == undefined || slient != true)
-					this.fireEvent('prop:change', [key, value]);
+					this.fireEvent('change:' + key, [key, value]);
 			}
 
 			return value;
