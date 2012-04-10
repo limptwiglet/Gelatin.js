@@ -193,6 +193,19 @@ describe('global gelatin helpers and classes', function () {
 			done();
 		});
 
+		it('should be able to change properties silently', function (done) {
+			var obj = new Gelatin.Object({
+			
+			});
+
+			obj.addEvent('change:fname', function () {
+				throw new Error('Observer should not be triggered');
+			});
+
+			obj.set('fname', 'test', true);
+			done();
+		});
+
 		it('should not trigger observers if properties hasnt changed value', function (done) {
 			var obj = new Gelatin.Object({
 				fname: 'Mark',
