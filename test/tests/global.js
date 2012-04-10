@@ -45,6 +45,18 @@ describe('global gelatin helpers and classes', function () {
 			expect(Gelatin.get(obj, 'foo.bar2')).to.not.exist;
 			done();
 		});
+
+		it('should call unknownKey for undefined keys', function (done) {
+			var obj = {
+				unknownKey: function () {
+					return 'unknown';
+				}
+			};
+
+			var value = Gelatin.get(obj, 'foo');
+			expect(value).to.eql('unknown');
+			done();
+		});
 	});
 
 	describe('set', function () {

@@ -25,7 +25,7 @@
 	 * @return Returns the property
 	 */
 	var get = Gelatin.get = function (obj, key) {
-		var path = ~key.indexOf('.') ? key.split('.') : false;
+		var path = ~key.indexOf('.') ? key.split('.') : false, value;
 
 		if (path) {
 			var root = obj;
@@ -37,10 +37,16 @@
 			return root;
 		}
 
-		var value = obj[key];
+		if (!(key in obj)) {
+			if (typeOf(obj.unknownKey) === 'function') {
+				value = obj.unknownKey();	
+			}
+		} else {
+			value = obj[key];
 
-		if (typeOf(value) === 'object' && 'get' in value) {
-			value = value.get(obj, key);
+			if (typeOf(value) === 'object' && 'get' in value) {
+				value = value.get(obj, key);
+			}
 		}
 
 		return value;
