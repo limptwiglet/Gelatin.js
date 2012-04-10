@@ -90,6 +90,12 @@ describe('global gelatin helpers and classes', function () {
 			done();
 		});
 
+		it('should set a undefined property', function (done) {
+			Gelatin.set(obj, 'test', 'test');
+			expect(Gelatin.get(obj, 'test')).to.eql('test');
+			done();
+		});
+
 		it('computed property should set properties', function (done) {
 			Gelatin.set(obj, 'fullName', 'Mark Gerrard');
 			expect(obj.fname).to.eql('Mark');
