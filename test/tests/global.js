@@ -46,15 +46,27 @@ describe('global gelatin helpers and classes', function () {
 			done();
 		});
 
-		it('should call unknownKey for undefined keys', function (done) {
+		it('should call getUnknown for undefined keys', function (done) {
 			var obj = {
-				unknownKey: function () {
+				getUnknown: function () {
 					return 'unknown';
 				}
 			};
 
 			var value = Gelatin.get(obj, 'foo');
 			expect(value).to.eql('unknown');
+			done();
+		});
+
+		it('should call setUnknown for undefined keys', function (done) {
+			var obj = {
+				setUnknown: function (key, value) {
+					return key+value;
+				}
+			};
+
+			var value = Gelatin.set(obj, 'foo', 'bar');
+			expect(value).to.eql('foobar');
 			done();
 		});
 	});
@@ -123,14 +135,41 @@ describe('global gelatin helpers and classes', function () {
 				lname: 'Gerrard'
 			});
 
-			obj.addEvent('change:fname', function (key, value) {
+			obj.addEvent('change:fname', function (key, value, oldValue) {
 				expect(key).to.eql('fname');
+				expect(oldValue).to.eql('Mark');
 				expect(value).to.eql('John');
 
 				done();
 			});
 
 			obj.set('fname', 'John');
+		});
+
+
+		it('should be able to trigger observers for given keys', function (done) {
+			var obj = new Gelatin.Object({
+				fname: 'Mark'
+			});
+
+			var c = 0;
+			var handler = function (key, value, oldValue) {
+				if (++c >= 1) {
+					expect(key).to.eql('fname');
+					expect(value).to.eql('Bill');
+					expect(oldValue).to.eql('Mark');
+					done();
+				}
+			};
+
+			obj.set('fname', 'Bill', true);
+			obj.addEvent('change:hasChanged', function () {
+				console.log('here');
+			});
+			obj.addEvent('change:fname', handler);
+
+			obj.triggerChange('fname');
+
 		});
 
 		it('should be able to remove observers', function (done) {

@@ -38,8 +38,8 @@
 		}
 
 		if (!(key in obj)) {
-			if (typeOf(obj.unknownKey) === 'function') {
-				value = obj.unknownKey();	
+			if (typeOf(obj.getUnknown) === 'function') {
+				value = obj.getUnknown(key);	
 			}
 		} else {
 			value = obj[key];
@@ -54,6 +54,12 @@
 
 
 	var set = Gelatin.set = function (obj, key, value) {
+		if (!(key in obj)) {
+			if (typeOf(obj.setUnknown) === 'function') {
+				return obj.setUnknown(key, value);
+			}
+		}
+
 		var prop = obj[key];
 
 		if (typeOf(prop) === 'object') {
@@ -101,12 +107,24 @@
 	var Obj = Gelatin.Object = new Class({
 		Implements: [Events],
 
+		meta: {
+			hasChanged: false
+		},
+
 		initialize: function (props) {
 			Object.append(this, props);
+			this._prevAttrs = {};
 		},
 
 		get: function (key) {
 			return get(this, key);
+		},
+
+		getUnknown: function (key) {
+			if (key in this.meta) {
+				return get(this.meta, key);
+			}
+			return undefined;
 		},
 
 		set: function (key, value, silent) {
@@ -114,77 +132,31 @@
 
 			if (oldValue !== value) {
 				value = set(this, key, value);
+				this._prevAttrs[key] = oldValue;
 
-				if (silent == undefined || slient != true)
-					this.fireEvent('change:' + key, [key, value]);
+				if (silent == undefined || silent != true) {
+					this.fireEvent('change', [key, value, oldValue]);
+					this.triggerChange('hasChanged', key);
+				}
 			}
 
 			return value;
+		},
+
+		triggerChange: function () {
+			var keys = Array.from(arguments);
+
+			keys.each(function (key) {
+				var name = 'change:'+key;
+
+				if (name in this.$events) {
+					this.$events[name].each(function (e) {
+						e(key, this.get(key), this._prevAttrs[key]);
+					}.bind(this));
+				}
+			}.bind(this));
 		}
 	});
-
-	Gelatin.Store = new Class({
-		Extends: Obj,
-
-		data: {},
-
-		initialize: function () {
-			
-		},
-
-		createRecord: function (type, data) {
-			var record = new type(this);
-			record.cId = getCid();
-		}
-	});
-
-	/**
-	 * Models your data from a data source
-	 */
-	Gelatin.Model = new Class({
-		Extends: Obj,
-
-		isDirty: true,
-		isClean: false,
-
-		store: null,
-
-		// The attributes this model will have
-		attributes: {},
-
-		// Default values for the attributes
-		defaults: {},
-
-		initialize: function (data) {
-			this.cId = getCid();
-
-			this.data = this.createData(data);
-
-			return this;
-		},
-
-		get: function (key) {
-			if (key in this.data) {
-				return get(this.data, key);
-			}
-
-			return get(this, key);
-		},
-
-		createData: function (data) {
-			return Object.merge(this.defaults, data || {});
-		},
-
-		json: new ComputedProperty(function () {
-			return Object.clone(this.data);
-		}),
-
-		_dataChange: function (type, key, value) {
-			this.set('isDirty', true);
-			this.set('isClean', false);
-		}
-	});
-
 
 	Gelatin.View = new Class({
 		Implements: [Options],
