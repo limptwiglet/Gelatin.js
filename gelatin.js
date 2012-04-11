@@ -151,12 +151,85 @@
 
 				if (name in this.$events) {
 					this.$events[name].each(function (e) {
-						e(key, this.get(key), this._prevAttrs[key]);
+						e(key, this.get(key), get(this, '_prevAttrs.'+key));
 					}.bind(this));
 				}
 			}.bind(this));
 		}
 	});
+
+
+	Gelatin.Store = new Class({
+		Implements: [Options],
+		
+		options: {
+			adapter: null
+		},
+
+		initialize: function(options) {
+			this.setOptions(options);	
+
+			this.records = {};
+			this.newRecords = {};
+			this.dirtyRecords = {};
+			this.typeMap = {};
+		},
+
+		createRecord: function(type, data) {
+			var cId = getCid(); 
+
+			var model = new type({
+				store: this
+			});
+			set(model, 'cId', cId);
+			model.addEvent('change', this._modelChanged.bind(this, model));
+
+			this.newRecords[cId] = this.records[cId] = model;
+
+			return model;
+		},
+
+		_modelChanged: function (model, key, value) {
+			var cId = get(model, 'cId');
+			var record = get(this.records, cId);
+			console.log(cId, record, this.records);
+
+			if (!(cId in this.dirtyRecords)) {
+				set(this.dirtyRecords, cId, record);
+			}
+		},
+
+		find: function (type, id) {
+
+		},
+
+		commit: function () {
+			
+		}
+	});
+
+
+	Gelatin.Model = new Class({
+		Extends: Gelatin.Object,
+		Implement: [Options],
+
+		primaryKey: 'id',
+
+		cId: null,
+
+		store: null,
+
+		attributes: {},
+
+		set: function (key, value, silent) {
+			if (key in this.attributes) {
+				return this.parent(key, value, silent);
+			} else {
+				throw new Error('You tried to set a property that is not defined');
+			}
+		}
+	});
+
 
 	Gelatin.View = new Class({
 		Implements: [Options],
