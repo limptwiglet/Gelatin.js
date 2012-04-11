@@ -152,12 +152,14 @@
 				this.set(key, obj[key], true);	
 			}.bind(this));
 
-			this.triggerChange.attempt(keys);
+			keys.push('hasChanged');
+
+			this.triggerChange.attempt(keys, this);
 		},
 
 		triggerChange: function () {
 			var keys = Array.from(arguments);
-			
+
 			keys.each(function (key) {
 				var name = 'change:'+key;
 
