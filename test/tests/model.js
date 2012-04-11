@@ -65,7 +65,11 @@ describe('Store', function () {
 		var m = store.createRecord(Model, {fname: 'WOW', sname: 'Trousers'});
 		store.commit();
 
-		console.log(store);	
+		var cId = m.get('cId');
+
+		expect(m.get('id')).to.exist;
+		expect(store.dirtyRecords).to.not.have.property(cId);
+
 		done();
 	});
 });
