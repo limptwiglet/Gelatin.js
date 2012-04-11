@@ -25,6 +25,7 @@
 	 * @return Returns the property
 	 */
 	var get = Gelatin.get = function (obj, key) {
+		key = key.toString();
 		var path = ~key.indexOf('.') ? key.split('.') : false, value;
 
 		if (path) {
@@ -44,9 +45,9 @@
 		} else {
 			value = obj[key];
 
-			if (typeOf(value) === 'object' && 'get' in value) {
-				value = value.get(obj, key);
-			}
+			//if (typeOf(value) === 'object' && 'get' in value) {
+				//value = value.get(obj, key);
+			//}
 		}
 
 		return value;
@@ -133,6 +134,7 @@
 			if (oldValue !== value) {
 				value = set(this, key, value);
 				this._prevAttrs[key] = oldValue;
+				set(this, 'hasChanged', true);
 
 				if (silent == undefined || silent != true) {
 					this.fireEvent('change', [key, value, oldValue]);
@@ -143,9 +145,19 @@
 			return value;
 		},
 
+		setProperties: function (obj, silent) {
+			var keys = Object.keys(obj);
+
+			keys.each(function (key) {
+				this.set(key, obj[key], true);	
+			}.bind(this));
+
+			this.triggerChange.attempt(keys);
+		},
+
 		triggerChange: function () {
 			var keys = Array.from(arguments);
-
+			
 			keys.each(function (key) {
 				var name = 'change:'+key;
 
@@ -186,17 +198,22 @@
 
 			this.newRecords[cId] = this.records[cId] = model;
 
+			model.setProperties(data);
+
 			return model;
 		},
 
 		_modelChanged: function (model, key, value) {
 			var cId = get(model, 'cId');
 			var record = get(this.records, cId);
-			console.log(cId, record, this.records);
 
 			if (!(cId in this.dirtyRecords)) {
 				set(this.dirtyRecords, cId, record);
 			}
+		},
+
+		didCreateRecord: function (model) {
+
 		},
 
 		find: function (type, id) {
@@ -204,7 +221,56 @@
 		},
 
 		commit: function () {
-			
+			this._createRecords();
+			this._updateRecords();			
+		},
+
+		_createRecords: function () {
+			var records = get(this, 'newRecords');
+			var adapter = this.options.adapter;
+
+			Object.each(records, function (model) {
+				adapter.createRecord(model, this);
+			}.bind(this));
+		},
+
+		didCreateRecord: function (model, data) {
+			var pk = get(model, 'primaryKey');
+			var id = get(data, pk);
+			set(model, 'id', id);
+
+			if (data) {
+				this._setHash(model, data);
+			}
+		},
+
+		_updateRecords: function () {
+			var records = get(this, 'dirtyRecords');
+			var adapter = this.options.adapter;
+
+			Object.each(records, function (model) {
+				adapter.updateRecord(model, this);
+			}.bind(this));
+		},
+
+		didUpdateRecord: function (model, data) {
+			var cId = get(model, 'cId');
+
+			delete this.dirtyRecords[cId];
+
+			if (data) {
+				this._setHash(model, data);
+			}
+		},
+
+		_setHash: function (model, data) {
+			var attrs = get(model, 'attributes');
+
+			data = Object.filter(data, function (value, key) {
+				return key in attrs;
+			});
+
+			model.setProperties(data);
 		}
 	});
 
@@ -215,11 +281,17 @@
 
 		primaryKey: 'id',
 
+		id: null,
 		cId: null,
 
 		store: null,
 
 		attributes: {},
+
+		initialize: function () {
+			this.parent.attempt(Array.from(arguments), this);
+			this.hash = {};
+		},
 
 		set: function (key, value, silent) {
 			if (key in this.attributes) {

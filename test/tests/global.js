@@ -16,35 +16,35 @@ describe('global gelatin helpers and classes', function () {
 			done();	
 		});
 
-		it('should return value from a computed property', function (done) {
-			expect(Gelatin.get(obj, 'fullName')).to.eql(obj.fname + ' ' + obj.lname);
-			done();
-		});
+		//it('should return value from a computed property', function (done) {
+			//expect(Gelatin.get(obj, 'fullName')).to.eql(obj.fname + ' ' + obj.lname);
+			//done();
+		//});
 
-		it('should get a property at a path "name.first"', function (done) {
-			var obj = {
-				name: {
-					first: 'Mark'
-				},
-				foo: {
-					bar: {
-						baz: {
-							bar: 'test'
-						},
+		//it('should get a property at a path "name.first"', function (done) {
+			//var obj = {
+				//name: {
+					//first: 'Mark'
+				//},
+				//foo: {
+					//bar: {
+						//baz: {
+							//bar: 'test'
+						//},
 
-						foo: Gelatin.computed(function () {
-							return 'test';
-						})
-					}
-				}
-			};
+						//foo: Gelatin.computed(function () {
+							//return 'test';
+						//})
+					//}
+				//}
+			//};
 
-			expect(Gelatin.get(obj, 'name.first')).to.eql(obj.name.first);
-			expect(Gelatin.get(obj, 'foo.bar.baz.bar')).to.eql(obj.foo.bar.baz.bar);
-			expect(Gelatin.get(obj, 'foo.bar.foo')).to.eql('test');
-			expect(Gelatin.get(obj, 'foo.bar2')).to.not.exist;
-			done();
-		});
+			//expect(Gelatin.get(obj, 'name.first')).to.eql(obj.name.first);
+			//expect(Gelatin.get(obj, 'foo.bar.baz.bar')).to.eql(obj.foo.bar.baz.bar);
+			//expect(Gelatin.get(obj, 'foo.bar.foo')).to.eql('test');
+			//expect(Gelatin.get(obj, 'foo.bar2')).to.not.exist;
+			//done();
+		//});
 
 		it('should call getUnknown for undefined keys', function (done) {
 			var obj = {

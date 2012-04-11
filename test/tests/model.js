@@ -1,6 +1,27 @@
 describe('Store', function () {
 	var store = new Gelatin.Store({
-		adapter: Gelatin.fixtureAdapter
+		adapter: {
+			createRecord: function (model, store) {
+				var data = {
+					id: Math.floor(Math.random() * 100)
+				};
+
+				Object.each(model.attributes, function (value, key) {
+					data[key] = model.get(key);
+				});
+
+				store.didCreateRecord(model, data);
+			},
+			updateRecord: function (model, store) {
+				var data = {};
+
+				Object.each(model.attributes, function (value, key) {
+					data[key] = model.get(key);
+				});
+
+				store.didUpdateRecord(model);
+			}
+		}
 	});
 
 	var Model = new Class({
@@ -36,6 +57,15 @@ describe('Store', function () {
 
 		expect(store.dirtyRecords).to.have.property(cId);
 
+		done();
+	});
+
+
+	it('should commit records and save the data', function (done) {
+		var m = store.createRecord(Model, {fname: 'WOW', sname: 'Trousers'});
+		store.commit();
+
+		console.log(store);	
 		done();
 	});
 });
