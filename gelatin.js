@@ -1,6 +1,11 @@
 (function () {
 	var root = this;
 
+
+	Class.Mutators.Static = function (items) {
+		this.extend(items);
+	};
+
 	// Setup our Gelatin namespace
 	var Gelatin = root.Gelatin = {};
 
@@ -237,7 +242,29 @@
 			this.typeMap = {};
 		},
 
+		typeMapFor: function (model) {
+			var	typeId = get(model, '_typeId');
+
+			if (!typeId) {
+				typeId = String.uniqueID();
+				set(model, '_typeId', typeId);
+			}
+
+			var typeMap = this.typeMap[typeId];
+
+			if (typeMap) {
+				return typeMap;
+			} else {
+				return this.typeMap[typeId] = {
+					idToCid: {}
+				};
+			}
+
+		},
+
 		createRecord: function(type, data) {
+			console.log(type.url);
+			var typeMap = this.typeMapFor(type);
 			var cId = getCid(); 
 
 			var model = new type({
@@ -262,12 +289,12 @@
 			}
 		},
 
-		didCreateRecord: function (model) {
+		find: function (model, id) {
+			var typeMap = this.typeMapFor(model);
 
-		},
-
-		find: function (type, id) {
-			console.log(type.$name);
+			if (id in typeMap.idToCid) {
+				console.log('yes');
+			}
 		},
 
 		commit: function () {
@@ -280,14 +307,18 @@
 			var adapter = this.options.adapter;
 
 			Object.each(records, function (model) {
-				adapter.createRecord(model, this);
+				adapter.createRecord(this, model.$constructor, model);
 			}.bind(this));
 		}.protect(),
 
 		didCreateRecord: function (model, data) {
+			var typeMap = this.typeMapFor(model);
+			var cId = get(model, 'cId');
 			var pk = get(model, 'primaryKey');
 			var id = get(data, pk);
 			set(model, 'id', id);
+
+			typeMap.idToCid[id] = cId;
 
 			if (data) {
 				this._setHash(model, data);
@@ -299,7 +330,7 @@
 			var adapter = this.options.adapter;
 
 			Object.each(records, function (model) {
-				adapter.updateRecord(model, this);
+				adapter.updateRecord(this, model.$constructor, model);
 			}.bind(this));
 		}.protect(),
 

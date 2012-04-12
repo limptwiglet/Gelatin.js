@@ -1,9 +1,10 @@
 describe('Store', function () {
+	var idC = 0;
 	var store = new Gelatin.Store({
 		adapter: {
-			createRecord: function (model, store) {
+			createRecord: function (store, type, model) {
 				var data = {
-					id: Math.floor(Math.random() * 100)
+					id:	idC++ 
 				};
 
 				Object.each(model.attributes, function (value, key) {
@@ -12,7 +13,7 @@ describe('Store', function () {
 
 				store.didCreateRecord(model, data);
 			},
-			updateRecord: function (model, store) {
+			updateRecord: function (store, type, model) {
 				var data = {};
 
 				Object.each(model.attributes, function (value, key) {
@@ -29,11 +30,25 @@ describe('Store', function () {
 
 		type: 'model',
 
+		Static: {
+			url: '/test'
+		},
+
 		attributes: {
 			fname: {type: 'string'},
 			sname: {type: 'string'},
 			age: {type: 'number'}
 		}
+	});
+
+	it('should generate a typeId for models', function (done) {
+		expect(Model).to.not.have.property('_typeId');
+		store.createRecord(Model, {fname: 'Test', sname: 'Test', age: 28});
+		store.createRecord(Model, {fname: 'Test', sname: 'Test', age: 28});
+		store.createRecord(Model, {fname: 'Test', sname: 'Test', age: 28});
+		store.commit();
+		console.log(store);
+		done();
 	});
 
 	it('should create records', function (done) {
@@ -42,6 +57,7 @@ describe('Store', function () {
 
 		var mcId = m.get('cId');
 		var m2cId = m2.get('cId');
+
 
 		expect(store.records).to.have.property(mcId);
 		expect(store.records).to.have.property(m2cId);
@@ -71,11 +87,13 @@ describe('Store', function () {
 		var cId = m.get('cId');
 
 		expect(m.get('id')).to.exist;
+		expect(store.records).to.have.property(cId);
 		expect(store.dirtyRecords).to.not.have.property(cId);
 
 		m.set('fname', 'POW');
 		expect(store.dirtyRecords).to.have.property(cId);
 		store.commit();
+		expect(store.records).to.have.property(cId);
 		expect(store.dirtyRecords).to.not.have.property(cId);
 
 		done();
@@ -83,7 +101,7 @@ describe('Store', function () {
 
 
 	it('should find records by id if they exist otherwise call into adapter', function (done) {
-		throw new Error('Write some tests');
+		store.find(Model, 1);
 		done();
 	});
 });
