@@ -226,163 +226,70 @@
 	Gelatin.Store = new Class({
 		Implements: [Options],
 
-		$name: 'Store',	
-		
 		options: {
-			adapter: null
+			transport: null
 		},
 
-		initialize: function(options) {
-			this.setOptions(options);	
+		initialize: function (options) {
+			this.setOptions(options);
 
 			this.records = {};
+			this.modelMap = {};
 			this.newRecords = {};
-			this.dirtyRecords = {};
-			this.typeMap = {};
 		},
 
-		typeMapFor: function (model) {
-			var	typeId = get(model, '_typeId');
+		getModelMap: function (Model) {
+			var modelId = get(Model, '_modelId');
 
-			if (!typeId) {
-				typeId = String.uniqueID();
-				set(model, '_typeId', typeId);
+			if (!modelId) {
+				modelId = String.uniqueID();
+				set(Model, '_modelId', modelId);
 			}
 
-			var typeMap = this.typeMap[typeId];
+			var modelMap = this.modelMap[modelId];
 
-			if (typeMap) {
-				return typeMap;
+			if (modelMap) {
+				return modelMap;
 			} else {
-				return this.typeMap[typeId] = {
-					idToCid: {}
+				return this.modelMap[modelId] = {
+					id2ClientId: {}
 				};
 			}
 		},
 
-		load: function (model, id, data) {
-			var typeMap = this.typeMapFor(model);
+		create: function (Model, data) {
+			var m = this.addRecord(Model, data);
 
-			console.log(this.records[typeMap.idToCid[id]]);
-
+			return m;
 		},
 
-		createRecord: function(type, data) {
-			var typeMap = this.typeMapFor(type);
-			var cId = getCid();
+		find: function (Model, id) {
+			var modelMap = this.getModelMap(Model);
 
-			var model = new type({
-				store: this
-			});
+			var cId = modelMap.id2ClientId[id];
 
-			model.set('cId', cId);
-			model.set('isNew', true);
-
-			model.addEvent('change', this._modelChanged.bind(this, model));
-
-			this.newRecords[cId] = this.records[cId] = model;
-
-			if (data)
-				model.setProperties(data);
-
-			var id = model.get('id');
-
-			if (id) {
-				typeMap.idToCid[id] = cId;
-			}
-
-			return model;
-		},
-
-		_modelChanged: function (model, key, value) {
-			var cId = get(model, 'cId');
-			var record = get(this.records, cId);
-
-			if (!key in model.attributes)
-				return;
-
-			model.set('isDirty', true);
-
-			if (!(cId in this.dirtyRecords)) {
-				set(this.dirtyRecords, cId, record);
+			if (cId) {
+				return get(this.records, cId);
 			}
 		},
 
-		find: function (model, id) {
-			var typeMap = this.typeMapFor(model);
+		addRecord: function (Model, data) {
+			var modelMap = this.getModelMap(Model);
+			var cId = String.uniqueID();
+			var m = new Model(data);
+			var id = get(m, get(m, 'primaryKey'));
 
-			if (id in typeMap.idToCid) {
-				return this.records[typeMap.idToCid[id]];
+			if (id !== false) {
+				set(m, 'isNew', false);
+				modelMap.id2ClientId[id] = cId;
 			} else {
-				var cId = String.uniqueID();
-				var m = new model({
-					store: this,
-					cId: cId	
-				});
-				typeMap.idToCid[id] = cId;
-				this.records[cId] = m;
-				this.options.adapter.find(this, model, id);
-				return m;
+				set(m, 'isNew', true);
 			}
-		},
 
-		commit: function () {
-			this._createRecords();
-			this._updateRecords();			
-		},
-
-		_createRecords: function () {
-			var records = get(this, 'newRecords');
-			var adapter = this.options.adapter;
-
-			Object.each(records, function (model) {
-				adapter.createRecord(this, model.$constructor, model);
-			}.bind(this));
-		}.protect(),
-
-
-		didCreateRecord: function (model, data) {
-			var typeMap = this.typeMapFor(model.$constructor);
-			var cId = get(model, 'cId');
-			var pk = get(model, 'primaryKey');
-			var id = get(data, pk);
-			set(model, 'id', id);
-
-			typeMap.idToCid[id] = cId;
-
-			if (data) {
-				this._setHash(model, data);
-			}
-		},
-
-		_updateRecords: function () {
-			var records = get(this, 'dirtyRecords');
-			var adapter = this.options.adapter;
-
-			Object.each(records, function (model) {
-				adapter.updateRecord(this, model.$constructor, model);
-			}.bind(this));
-		}.protect(),
-
-
-		didUpdateRecord: function (model, data) {
-			var cId = get(model, 'cId');
-
-			delete this.dirtyRecords[cId];
-
-			if (data) {
-				this._setHash(model, data);
-			}
-		},
-
-		_setHash: function (model, data) {
-			var attrs = get(model, 'attributes');
-
-			data = Object.filter(data, function (value, key) {
-				return key in attrs;
-			});
-
-			model.setProperties(data);
+			set(m, 'clientId', cId);
+			set(m, 'isLoaded', true);
+			
+			return this.records[cId] = m;
 		}
 	});
 	new Type('Store', Gelatin.Store);
@@ -393,25 +300,10 @@
 
 		primaryKey: 'id',
 
-		isNew: false,
-		isDirty: false,
+		id: false,
 
-		// Server side id
-		id: null,
-
-		// Client side id
-		cId: null,
-
-		// The store this model belongs to
-		store: null,
-
-		// Attributes hash contains attributes
-		attributes: {},
-
-		initialize: function () {
-			this.parent.attempt(Array.from(arguments), this);
-			this.hash = {};
-		}
+		isLoaded: false,
+		isNew: false
 	});
 	new Type('Model', Gelatin.Model);
 
