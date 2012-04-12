@@ -1,7 +1,6 @@
 (function () {
 	var root = this;
 
-
 	Class.Mutators.Static = function (items) {
 		this.extend(items);
 	};
@@ -259,23 +258,38 @@
 					idToCid: {}
 				};
 			}
+		},
+
+		load: function (model, id, data) {
+			var typeMap = this.typeMapFor(model);
+
+			console.log(this.records[typeMap.idToCid[id]]);
 
 		},
 
 		createRecord: function(type, data) {
-			console.log(type.url);
 			var typeMap = this.typeMapFor(type);
-			var cId = getCid(); 
+			var cId = getCid();
 
 			var model = new type({
 				store: this
 			});
-			set(model, 'cId', cId);
+
+			model.set('cId', cId);
+			model.set('isNew', true);
+
 			model.addEvent('change', this._modelChanged.bind(this, model));
 
 			this.newRecords[cId] = this.records[cId] = model;
 
-			model.setProperties(data);
+			if (data)
+				model.setProperties(data);
+
+			var id = model.get('id');
+
+			if (id) {
+				typeMap.idToCid[id] = cId;
+			}
 
 			return model;
 		},
@@ -283,6 +297,11 @@
 		_modelChanged: function (model, key, value) {
 			var cId = get(model, 'cId');
 			var record = get(this.records, cId);
+
+			if (!key in model.attributes)
+				return;
+
+			model.set('isDirty', true);
 
 			if (!(cId in this.dirtyRecords)) {
 				set(this.dirtyRecords, cId, record);
@@ -293,7 +312,17 @@
 			var typeMap = this.typeMapFor(model);
 
 			if (id in typeMap.idToCid) {
-				console.log('yes');
+				return this.records[typeMap.idToCid[id]];
+			} else {
+				var cId = String.uniqueID();
+				var m = new model({
+					store: this,
+					cId: cId	
+				});
+				typeMap.idToCid[id] = cId;
+				this.records[cId] = m;
+				this.options.adapter.find(this, model, id);
+				return m;
 			}
 		},
 
@@ -311,8 +340,9 @@
 			}.bind(this));
 		}.protect(),
 
+
 		didCreateRecord: function (model, data) {
-			var typeMap = this.typeMapFor(model);
+			var typeMap = this.typeMapFor(model.$constructor);
 			var cId = get(model, 'cId');
 			var pk = get(model, 'primaryKey');
 			var id = get(data, pk);
@@ -333,6 +363,7 @@
 				adapter.updateRecord(this, model.$constructor, model);
 			}.bind(this));
 		}.protect(),
+
 
 		didUpdateRecord: function (model, data) {
 			var cId = get(model, 'cId');
@@ -359,28 +390,27 @@
 
 	Gelatin.Model = new Class({
 		Extends: Gelatin.Object,
-		Implement: [Options],
 
 		primaryKey: 'id',
 
+		isNew: false,
+		isDirty: false,
+
+		// Server side id
 		id: null,
+
+		// Client side id
 		cId: null,
 
+		// The store this model belongs to
 		store: null,
 
+		// Attributes hash contains attributes
 		attributes: {},
 
 		initialize: function () {
 			this.parent.attempt(Array.from(arguments), this);
 			this.hash = {};
-		},
-
-		set: function (key, value, silent) {
-			if (key in this.attributes) {
-				return this.parent(key, value, silent);
-			} else {
-				throw new Error('You tried to set a property that is not defined');
-			}
 		}
 	});
 	new Type('Model', Gelatin.Model);

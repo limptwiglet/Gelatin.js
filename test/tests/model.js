@@ -1,107 +1,105 @@
+var get = Gelatin.get;
+var set = Gelatin.set;
+
 describe('Store', function () {
-	var idC = 0;
-	var store = new Gelatin.Store({
-		adapter: {
-			createRecord: function (store, type, model) {
-				var data = {
-					id:	idC++ 
-				};
+	it('should be able to create a store', function (done) {
+		var store = new Gelatin.Store();
+		expect(store).to.be.ok;
+		done();
+	});
 
-				Object.each(model.attributes, function (value, key) {
-					data[key] = model.get(key);
-				});
 
-				store.didCreateRecord(model, data);
-			},
-			updateRecord: function (store, type, model) {
-				var data = {};
+	it('should create records from the model type', function (done) {
+		var store = new Gelatin.Store();
+		var Model = new Class({Extends: Gelatin.Model});
 
-				Object.each(model.attributes, function (value, key) {
-					data[key] = model.get(key);
-				});
+		var model = store.createRecord(Model);
+		expect(model).to.be.ok;
 
-				store.didUpdateRecord(model);
+		expect(get(model, 'isNew')).to.be.true;
+
+		done();
+	});
+
+	it('should set inital data on model if passed a hash', function (done) {
+		var store = new Gelatin.Store();
+		var Model = new Class({
+			Extends: Gelatin.Model,
+
+			attributes: {
+				name: {type: 'string'}
 			}
-		}
-	});
+		});
 
-	var Model = new Class({
-		Extends: Gelatin.Model,
-
-		type: 'model',
-
-		Static: {
-			url: '/test'
-		},
-
-		attributes: {
-			fname: {type: 'string'},
-			sname: {type: 'string'},
-			age: {type: 'number'}
-		}
-	});
-
-	it('should generate a typeId for models', function (done) {
-		expect(Model).to.not.have.property('_typeId');
-		store.createRecord(Model, {fname: 'Test', sname: 'Test', age: 28});
-		store.createRecord(Model, {fname: 'Test', sname: 'Test', age: 28});
-		store.createRecord(Model, {fname: 'Test', sname: 'Test', age: 28});
-		store.commit();
-		console.log(store);
-		done();
-	});
-
-	it('should create records', function (done) {
-		var m = store.createRecord(Model, {fname: 'Mark', sname: 'Gerrard', age: 2});
-		var m2 = store.createRecord(Model, {fname: 'Mark', sname: 'Gerrard', age: 2});
-
-		var mcId = m.get('cId');
-		var m2cId = m2.get('cId');
-
-
-		expect(store.records).to.have.property(mcId);
-		expect(store.records).to.have.property(m2cId);
-		expect(store.newRecords).to.have.property(mcId);
-		expect(store.newRecords).to.have.property(m2cId);
-		expect(m.store).to.exist;
+		var model = store.createRecord(Model, {name: 'Mark'});
+		expect(get(model, 'isNew')).to.be.true;
+		expect(model.get('name')).to.eql('Mark');
 
 		done();
 	});
 
-	it('should put a record into dirty records if an attribute changes', function (done) {
-		var m = store.createRecord(Model, {fname: 'Mark'});
+	it('should put record into dirty state when attribute changes', function (done) {
+		var store = new Gelatin.Store();
+		var Model = new Class({
+			Extends: Gelatin.Model,
 
-		var cId = m.get('cId');
-		m.set('fname', 'Bill');
+			attributes: {
+				name: {type: 'string'}
+			}
+		});
 
-		expect(store.dirtyRecords).to.have.property(cId);
+		var model = store.createRecord(Model, {name: 'Mark'});
+		model.set('name', 'Bill');
+
+		expect(get(model, 'isNew')).to.be.true;
+		expect(get(model, 'isDirty')).to.be.true;
+		expect(get(model, 'name')).to.be.eql('Bill');
 
 		done();
 	});
 
 
-	it('should commit new / updated records and save the data', function (done) {
-		var m = store.createRecord(Model, {fname: 'WOW', sname: 'Trousers'});
-		store.commit();
+	it('should be able find a record if an id is provided using store.find(Model, 1)', function (done) {
+		var store = new Gelatin.Store();
+		var Model = new Class({
+			Extends: Gelatin.Model,
 
-		var cId = m.get('cId');
+			attributes: {
+				name: {type: 'string'}
+			}
+		});
 
-		expect(m.get('id')).to.exist;
-		expect(store.records).to.have.property(cId);
-		expect(store.dirtyRecords).to.not.have.property(cId);
+		var m = store.createRecord(Model, {id: 1, name: 'Mark'});
+		var m2 = store.find(Model, 1);	
 
-		m.set('fname', 'POW');
-		expect(store.dirtyRecords).to.have.property(cId);
-		store.commit();
-		expect(store.records).to.have.property(cId);
-		expect(store.dirtyRecords).to.not.have.property(cId);
-
+		expect(m).to.eql(m2);
 		done();
 	});
 
+	it('should return a model with no data if the id was not found in the store and call the adapters find method', function (done) {
 
-	it('should find records by id if they exist otherwise call into adapter', function (done) {
-		store.find(Model, 1);
+		var store = new Gelatin.Store({
+			adapter: {
+				find: function (store, type, id) {
+					store.load(type, 1, {name: 'Mark'});	
+				}
+			}
+		});
+		var Model = new Class({
+			Extends: Gelatin.Model,
+
+			attributes: {
+				name: {type: 'string'}
+			}
+		});
+
+		var m = store.find(Model, 1);
+
+		expect(m).to.exist;
+		done();
+	});
+
+	it('should call the adapters find method when calling store.find', function (done) {
 		done();
 	});
 });
