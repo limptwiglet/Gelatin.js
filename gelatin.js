@@ -12,8 +12,7 @@
 	 */
 	var curCid = 0;
 	var getCid = function (prefix) {
-		var id = curCid++;
-		return prefix ? prefix + id : id;
+		return String.uniqueID();
 	};
 
 
@@ -138,7 +137,7 @@
 		 */
 		get: function (key) {
 			return get(this, key);
-		},
+		}.overloadGetter(),
 
 		
 		/**
@@ -222,6 +221,8 @@
 	 */
 	Gelatin.Store = new Class({
 		Implements: [Options],
+
+		$name: 'Store',	
 		
 		options: {
 			adapter: null
@@ -266,7 +267,7 @@
 		},
 
 		find: function (type, id) {
-
+			console.log(type.$name);
 		},
 
 		commit: function () {
@@ -281,7 +282,7 @@
 			Object.each(records, function (model) {
 				adapter.createRecord(model, this);
 			}.bind(this));
-		},
+		}.protect(),
 
 		didCreateRecord: function (model, data) {
 			var pk = get(model, 'primaryKey');
@@ -300,7 +301,7 @@
 			Object.each(records, function (model) {
 				adapter.updateRecord(model, this);
 			}.bind(this));
-		},
+		}.protect(),
 
 		didUpdateRecord: function (model, data) {
 			var cId = get(model, 'cId');
@@ -322,6 +323,7 @@
 			model.setProperties(data);
 		}
 	});
+	new Type('Store', Gelatin.Store);
 
 
 	Gelatin.Model = new Class({
@@ -350,6 +352,7 @@
 			}
 		}
 	});
+	new Type('Model', Gelatin.Model);
 
 
 	Gelatin.View = new Class({

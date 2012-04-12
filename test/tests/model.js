@@ -40,10 +40,13 @@ describe('Store', function () {
 		var m = store.createRecord(Model, {fname: 'Mark', sname: 'Gerrard', age: 2});
 		var m2 = store.createRecord(Model, {fname: 'Mark', sname: 'Gerrard', age: 2});
 
-		expect(store.records).to.have.property('0');
-		expect(store.records).to.have.property('1');
-		expect(store.newRecords).to.have.property('0');
-		expect(store.newRecords).to.have.property('1');
+		var mcId = m.get('cId');
+		var m2cId = m2.get('cId');
+
+		expect(store.records).to.have.property(mcId);
+		expect(store.records).to.have.property(m2cId);
+		expect(store.newRecords).to.have.property(mcId);
+		expect(store.newRecords).to.have.property(m2cId);
 		expect(m.store).to.exist;
 
 		done();
@@ -61,7 +64,7 @@ describe('Store', function () {
 	});
 
 
-	it('should commit records and save the data', function (done) {
+	it('should commit new / updated records and save the data', function (done) {
 		var m = store.createRecord(Model, {fname: 'WOW', sname: 'Trousers'});
 		store.commit();
 
@@ -70,6 +73,17 @@ describe('Store', function () {
 		expect(m.get('id')).to.exist;
 		expect(store.dirtyRecords).to.not.have.property(cId);
 
+		m.set('fname', 'POW');
+		expect(store.dirtyRecords).to.have.property(cId);
+		store.commit();
+		expect(store.dirtyRecords).to.not.have.property(cId);
+
+		done();
+	});
+
+
+	it('should find records by id if they exist otherwise call into adapter', function (done) {
+		throw new Error('Write some tests');
 		done();
 	});
 });

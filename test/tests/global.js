@@ -202,7 +202,7 @@ describe('global gelatin helpers and classes', function () {
 				throw new Error('Observer should not be triggered');
 			});
 
-			obj.set('fname', 'test', true);
+			obj.set('fname', 'silent night', true);
 			done();
 		});
 
