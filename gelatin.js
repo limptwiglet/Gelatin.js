@@ -252,44 +252,87 @@
 				return modelMap;
 			} else {
 				return this.modelMap[modelId] = {
-					id2ClientId: {}
+					id2Cid: {}
 				};
 			}
 		},
 
 		create: function (Model, data) {
-			var m = this.addRecord(Model, data);
+			data = data || {};
 
-			return m;
+			var id = data[Model.prototype.primaryKey];
+
+			var modelMap = this.getModelMap(Model);
+
+			var cId = String.uniqueID();
+
+			var m = new Model(data);
+			set(m, 'cId', cId);
+			set(m, 'isLoaded', true);
+			set(m, 'isNew', true);
+
+			if (id) {
+				modelMap.id2Cid[id] = cId;
+				set(m, 'isNew', false);
+			}
+
+			return this.records[cId] = m;
 		},
 
 		find: function (Model, id) {
 			var modelMap = this.getModelMap(Model);
 
-			var cId = modelMap.id2ClientId[id];
+			var cId = modelMap.id2Cid[id];
 
 			if (cId) {
 				return get(this.records, cId);
+			} else {
+				var m = new Model();
+				cId = set(m, 'cId', String.uniqueID());
+				modelMap.id2Cid[id] = cId;
+				set(m, 'isLoaded', false);
+
+				set(this.records, cId, m);
+
+				if (this.options.transport)
+					this.options.transport.find(this, Model, id);
+
+				return m;
 			}
 		},
 
-		addRecord: function (Model, data) {
+		load: function (Model, id, data) {
 			var modelMap = this.getModelMap(Model);
-			var cId = String.uniqueID();
-			var m = new Model(data);
-			var id = get(m, get(m, 'primaryKey'));
+			var m = null;
 
-			if (id !== false) {
-				set(m, 'isNew', false);
-				modelMap.id2ClientId[id] = cId;
-			} else {
-				set(m, 'isNew', true);
+			if (data === undefined) {
+				data = id;
 			}
 
-			set(m, 'clientId', cId);
-			set(m, 'isLoaded', true);
-			
-			return this.records[cId] = m;
+			var pk = Model.prototype.primaryKey;
+			var id = data[pk];
+
+			var cId = modelMap.id2Cid[id];
+
+			// If no client ID exists we need to create a new model instance
+			if (!cId) {
+				m = new Model(data);
+				cId = set(m, 'cId', String.uniqueID());
+				set(this.records, cId, m);
+			} else {
+				m = get(this.records, cId);
+			}
+
+			// Update the model map with the client id
+			modelMap.id2Cid[id] = cId;
+
+			m.set('isLoaded', true);
+		},
+
+		loadMany: function (Model, ids, datas) {
+			ids.each(function (id, i) {
+				this.load(Model, id, datas ? datas[i] : undefined);	
+			}.bind(this));
 		}
 	});
 	new Type('Store', Gelatin.Store);
@@ -299,6 +342,8 @@
 		Extends: Gelatin.Object,
 
 		primaryKey: 'id',
+
+		cId: null,
 
 		id: false,
 
