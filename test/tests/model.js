@@ -182,6 +182,8 @@ describe('Store', function () {
 
 		var ma = store.findAll(Model);
 
+		console.log(ma);
+
 		done();
 	});
 });

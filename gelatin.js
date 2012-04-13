@@ -304,16 +304,21 @@
 		findAll: function (Model) {
 			var modelMap = this.getModelMap(Model);
 
-			console.log(modelMap);
+			if (modelMap.all) return modelMap.all;
+
+			var allArray = new Gelatin.ModelArray();
+
+			modelMap.all = allArray;
+
+			return allArray;
+
 		},
 
 		load: function (Model, id, data) {
 			var modelMap = this.getModelMap(Model);
 			var m = null;
 
-			if (data === undefined) {
-				data = id;
-			}
+			if (data === undefined) data = id;
 
 			var pk = Model.prototype.primaryKey;
 			var id = data[pk];
@@ -358,12 +363,26 @@
 	});
 	new Type('Model', Gelatin.Model);
 
+
 	Gelatin.ModelArray = new Class({
 		Extends: Gelatin.Object,
 
 		initialize: function () {
 			this.parent();
 			this.models = Array.from(arguments);
+		}
+	});
+
+	Gelatin.ModelArray.implement({
+		each: function (fn) {
+			Array.each(this.models, fn);
+		},
+
+		push: function (model) {
+			var models = this.get('models');
+			model = models.push(model);
+			this.set('models', models);
+			return model;
 		}
 	});
 
