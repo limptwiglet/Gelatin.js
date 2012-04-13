@@ -161,6 +161,29 @@ describe('Store', function () {
 			done();
 		});
 	});
+
+
+	it('should return all records when calling findAll', function (done) {
+		var store = new Gelatin.Store();	
+		var Model = new Class({
+			Extends: Gelatin.Model
+		});
+
+		store.loadMany(Model, [
+			{
+				id: 1,
+				name: 'Mark'
+			},
+			{
+				id: 2,
+				name: 'Mark'
+			}
+		]);
+
+		var ma = store.findAll(Model);
+
+		done();
+	});
 });
 
 

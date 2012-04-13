@@ -301,6 +301,12 @@
 			}
 		},
 
+		findAll: function (Model) {
+			var modelMap = this.getModelMap(Model);
+
+			console.log(modelMap);
+		},
+
 		load: function (Model, id, data) {
 			var modelMap = this.getModelMap(Model);
 			var m = null;
@@ -351,6 +357,15 @@
 		isNew: false
 	});
 	new Type('Model', Gelatin.Model);
+
+	Gelatin.ModelArray = new Class({
+		Extends: Gelatin.Object,
+
+		initialize: function () {
+			this.parent();
+			this.models = Array.from(arguments);
+		}
+	});
 
 
 	Gelatin.View = new Class({
