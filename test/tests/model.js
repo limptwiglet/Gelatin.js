@@ -274,4 +274,35 @@ describe('Store', function () {
 		});
 		done();
 	});
+
+
+	it('should be able to add filters to loaded records', function (done) {
+		var store = new Gelatin.Store({
+		});	
+
+		var Model = new Class({
+			Extends: Gelatin.Model
+		});
+
+		store.loadMany(Model, [
+			{ id: 1, name: 'Mark' },
+			{ id: 2, name: 'Bill' }
+		]);
+
+		var fma = store.filter(Model, function (model) {
+			var name = model.get('name');
+
+			return /[m]/ig.test(name);
+		});
+
+		expect(fma.models).to.have.length(1);
+		store.loadMany(Model, [
+			{ id: 3, name: 'Matt' },
+			{ id: 4, name: 'flanger' }
+		]);
+		expect(fma.models).to.have.length(2);
+		console.log(fma);
+
+		done();
+	});
 });

@@ -319,6 +319,14 @@
 			return false;
 		},
 
+		filter: function (Model, filter) {
+			var array = new Gelatin.ModelArray();
+			set(array, 'filter', filter);
+			this.addModelArray(Model, array);
+
+			return array;
+		},
+
 		findAll: function (Model) {
 			var modelMap = this.getModelMap(Model);
 
@@ -399,7 +407,7 @@
 			}.bind(this));
 		},
 
-		addModelArray: function(Model, array, filter) {
+		addModelArray: function(Model, array) {
 			var modelMap = this.getModelMap(Model);
 			modelMap.modelArrays.push(array);
 
