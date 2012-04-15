@@ -208,6 +208,38 @@ describe('Store', function () {
 
 		done();
 	});
+
+	it('should call the transports findAll method', function (done) {
+		var store = new Gelatin.Store({
+			transport: {
+				findAll: function (store, Model) {
+					store.loadMany(Model, [
+						{
+							id: 1,
+							name: 'Marl'
+						},
+						{
+							id: 2,
+							name: 'Bill'
+						}
+					]);
+					var ma = store.findAll(Model);
+
+					expect(ma.models).to.have.length(2);
+					expect(store).to.exist;
+					expect(Model).to.exist;
+
+					done();
+				}
+			}
+		});	
+		var Model = new Class({
+			Extends: Gelatin.Model
+		});
+
+		var ma = store.findAll(Model);
+		expect(ma.models).to.have.length(0);
+	});
 });
 
 
