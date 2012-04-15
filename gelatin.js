@@ -307,6 +307,18 @@
 			}
 		},
 
+		query: function(Model, query) {
+			var modelMap = this.getModelMap(Model);	
+			var transport = this.options.transport;
+
+			if (transport && transport.query) {
+				var array = new Gelatin.ModelArray();
+				transport.query(this, Model, query, array);
+				return array;
+			}
+			return false;
+		},
+
 		findAll: function (Model) {
 			var modelMap = this.getModelMap(Model);
 
@@ -353,12 +365,16 @@
 
 			m.set('isLoaded', true);
 			this.updateModelArrays(Model, cId);
+			return m;
 		},
 
 		loadMany: function (Model, ids, datas) {
+			var models = [];
 			ids.each(function (id, i) {
-				this.load(Model, id, datas ? datas[i] : undefined);	
+				var m = this.load(Model, id, datas ? datas[i] : undefined);
+				models.push(m);
 			}.bind(this));
+			return models;
 		},
 
 		updateModelArrays: function (Model, cId) {

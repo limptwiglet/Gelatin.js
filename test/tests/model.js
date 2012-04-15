@@ -197,13 +197,14 @@ describe('Store', function () {
 		var ma = store.findAll(Model);
 		expect(ma.models).to.have.length(0);
 
-		store.loadMany(Model, [
+		var models = store.loadMany(Model, [
 			{
 				id: 1,
 				name: 'Mark'
 			}
 		]);
 
+		expect(models).to.have.length(1);
 		expect(ma.models).to.have.length(1);
 
 		done();
@@ -240,29 +241,37 @@ describe('Store', function () {
 		var ma = store.findAll(Model);
 		expect(ma.models).to.have.length(0);
 	});
-});
 
 
-describe('Model', function () {
-	var Model = new Class({
-		Extends: Gelatin.Model,
+	it('should call the transports query method when querying the store', function (done) {
+		var store = new Gelatin.Store({
+			transport: {
+				query: function (store, Model, query, array) {
+					expect(store).to.exist;
+					expect(Model).to.exist;
+					expect(query).to.exist;
+					expect(array).to.exist;
 
-		type: 'model',
+					var models = store.loadMany(Model, [
+						{
+							id: 1,
+							name: 'Mark'
+						}
+					]);
 
-		attributes: {
-			fname: {type: 'string'},
-			sname: {type: 'string'},
-			age: {type: 'number'}
-		}
-	});
+					array.set('models', models);
 
-	it('should throw an error when setting attribute that isnt defined', function (done) {
-		var m = new Model();
-		try {
-			m.set('foo', 'bar');
-		} catch (e) {
-			expect(e).to.exist;
-			done();
-		}
+					done();
+				}
+			}
+		});	
+		var Model = new Class({
+			Extends: Gelatin.Model
+		});
+
+		var ma = store.query(Model, {
+			name: 'Mark'
+		});
+		done();
 	});
 });
