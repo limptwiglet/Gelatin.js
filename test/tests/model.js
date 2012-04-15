@@ -164,7 +164,14 @@ describe('Store', function () {
 
 
 	it('should return all records when calling findAll', function (done) {
-		var store = new Gelatin.Store();	
+		var store = new Gelatin.Store({
+			transport: {
+				findAll: function (store, Model) {
+					store.loadMany(Model, [
+					]);
+				}
+			}
+		});	
 		var Model = new Class({
 			Extends: Gelatin.Model
 		});
@@ -176,14 +183,20 @@ describe('Store', function () {
 			},
 			{
 				id: 2,
-				name: 'Mark'
+				name: 'Bill'
 			}
 		]);
 
 		var ma = store.findAll(Model);
+		expect(ma.models).to.have.length(2);
 
-		console.log(ma);
-
+		store.loadMany(Model, [
+			{
+				id: 3,
+				name: 'Test'
+			}
+		]);
+		expect(ma.models).to.have.length(3);
 		done();
 	});
 });

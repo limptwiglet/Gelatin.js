@@ -236,6 +236,7 @@
 			this.records = {};
 			this.modelMap = {};
 			this.newRecords = {};
+			this.modelArrays = {};
 		},
 
 		getModelMap: function (Model) {
@@ -252,7 +253,9 @@
 				return modelMap;
 			} else {
 				return this.modelMap[modelId] = {
-					id2Cid: {}
+					id2Cid: {},
+					cIds: [],
+					modelArrays: []
 				};
 			}
 		},
@@ -273,8 +276,11 @@
 
 			if (id) {
 				modelMap.id2Cid[id] = cId;
+				modelMap.cIds.push(cId);
 				set(m, 'isNew', false);
 			}
+
+			this.updateModelArrays(Model, cId);
 
 			return this.records[cId] = m;
 		},
@@ -306,12 +312,19 @@
 
 			if (modelMap.all) return modelMap.all;
 
-			var allArray = new Gelatin.ModelArray();
+			var array = new Gelatin.ModelArray();
 
-			modelMap.all = allArray;
+			this.addModelArray(Model, array);
 
-			return allArray;
+			modelMap.all = array;
 
+			var transport = this.options.transport;
+
+			if (transport && transport.findAll) {
+				transport.findAll(this, Model);
+			}
+
+			return array;
 		},
 
 		load: function (Model, id, data) {
@@ -336,13 +349,62 @@
 
 			// Update the model map with the client id
 			modelMap.id2Cid[id] = cId;
+			modelMap.cIds.push(cId);
 
 			m.set('isLoaded', true);
+			this.updateModelArrays(Model, cId);
 		},
 
 		loadMany: function (Model, ids, datas) {
 			ids.each(function (id, i) {
 				this.load(Model, id, datas ? datas[i] : undefined);	
+			}.bind(this));
+		},
+
+		updateModelArrays: function (Model, cId) {
+			var modelMap = this.getModelMap(Model);
+			var m = get(this.records, cId);
+
+			modelMap.modelArrays.each(function (array) {
+				var filter = get(array, 'filter');
+
+				var inArray = array.indexOf(m) !== -1;
+				var add = false;
+
+				if (!filter || filter(m)) {
+					add = true;
+				}
+
+				if (add && !inArray) {
+					array.push(m);
+				} else if (!add && inArray) {
+					array.remove(m);	
+				}
+			}.bind(this));
+		},
+
+		addModelArray: function(Model, array, filter) {
+			var modelMap = this.getModelMap(Model);
+			modelMap.modelArrays.push(array);
+
+			modelMap.modelArrays.each(function (array) {
+				var filter = get(array, 'filter');
+
+				for (var i = 0; i < modelMap.cIds.length; i++) {
+					var m = get(this.records, modelMap.cIds[i])
+					var inArray = array.indexOf(m) !== -1;
+					var add = false;
+
+					if (!filter || filter(m)) {
+						add = true;
+					}
+
+					if (add && !inArray) {
+						array.push(m);
+					} else if (!add && inArray) {
+						array.remove(m);	
+					}
+				}
 			}.bind(this));
 		}
 	});
@@ -370,10 +432,22 @@
 		initialize: function () {
 			this.parent();
 			this.models = Array.from(arguments);
+			this.length = this.models.length;
 		}
 	});
 
 	Gelatin.ModelArray.implement({
+		indexOf: function (model) {
+			var models = this.get('models');
+			return models.indexOf(model);
+		},
+
+		remove: function (model) {
+			var models = this.get('models');
+			models.splice(models.indexOf(model), 1);
+			this.set('models', models);
+		},
+
 		each: function (fn) {
 			Array.each(this.models, fn);
 		},
