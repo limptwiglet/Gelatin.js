@@ -163,14 +163,8 @@ describe('Store', function () {
 	});
 
 
-	it('should return all records when calling findAll', function (done) {
+	it('should return all loaded records when calling findAll', function (done) {
 		var store = new Gelatin.Store({
-			transport: {
-				findAll: function (store, Model) {
-					store.loadMany(Model, [
-					]);
-				}
-			}
 		});	
 		var Model = new Class({
 			Extends: Gelatin.Model
@@ -189,14 +183,29 @@ describe('Store', function () {
 
 		var ma = store.findAll(Model);
 		expect(ma.models).to.have.length(2);
+		done();
+	});
+
+	it('should return a model array that gets updated when new models load', function (done) {
+		var store = new Gelatin.Store({
+		});	
+		var Model = new Class({
+			Extends: Gelatin.Model
+		});
+
+
+		var ma = store.findAll(Model);
+		expect(ma.models).to.have.length(0);
 
 		store.loadMany(Model, [
 			{
-				id: 3,
-				name: 'Test'
+				id: 1,
+				name: 'Mark'
 			}
 		]);
-		expect(ma.models).to.have.length(3);
+
+		expect(ma.models).to.have.length(1);
+
 		done();
 	});
 });
