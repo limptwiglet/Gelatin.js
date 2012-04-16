@@ -290,7 +290,6 @@ describe('Store', function () {
 		]);
 
 		var fma = store.filter(Model, function (model) {
-			console.log(model);
 			var name = model.get('name');
 
 			return /[m]/ig.test(name);
@@ -348,6 +347,64 @@ describe('Store', function () {
 		store.create(Model, {
 			name: 'Mark'
 		});
+
+		store.save();
+	});
+
+
+	it('should move record into dirty state when attribute changes', function (done) {
+		var store = new Gelatin.Store({
+		});
+
+		var Model = new Class({
+			Extends: Gelatin.Model,
+
+			attributes: {
+				fname: {}
+			}
+		});
+
+		var m = store.create(Model, {
+		});
+
+		var cId = get(m, 'cId');
+
+		expect(store.dirtyRecords).to.not.have.property(cId);
+
+		m.set('bur', 'test');
+
+		expect(store.dirtyRecords).to.not.have.property(cId);
+
+		m.set('fname', 'fook');
+
+		expect(store.dirtyRecords).to.have.property(cId);
+
+		done();
+	});
+
+	it('should move record out of dirty state when store saves', function (done) {
+		var store = new Gelatin.Store({
+			transport: {
+				update: function (store, model) {
+					store.didUpdate(model, { fname: 'fook' });
+				}
+			}
+		});
+
+		var Model = new Class({
+			Extends: Gelatin.Model,
+
+			attributes: {
+				fname: {}
+			}
+		});
+
+		var m = store.create(Model, {
+		});
+
+		var cId = get(m, 'cId');
+		m.set('fname', 'fook');
+		expect(store.dirtyRecords).to.have.property(cId);
 
 		store.save();
 	});

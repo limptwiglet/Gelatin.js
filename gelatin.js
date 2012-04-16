@@ -230,6 +230,7 @@
 			this.modelMap = {};
 			this.newRecords = {};
 			this.modelArrays = {};
+			this.dirtyRecords = {};
 		},
 
 		getModelMap: function (Model) {
@@ -261,6 +262,12 @@
 					transport.create(this, m);
 				}.bind(this));
 			}
+
+			if (transport.update) {
+				Object.each(this.dirtyRecords, function (m, cId) {
+					transport.create(this, m);
+				}.bind(this));
+			}
 		},
 
 		create: function (Model, data) {
@@ -277,6 +284,7 @@
 			set(m, 'isLoaded', true);
 			set(m, 'isNew', true);
 			set(m, 'store', this);
+			m.addEvent('change', this.modelAttributeChange.bind(this, m));
 
 			if (id) {
 				modelMap.id2Cid[id] = cId;
@@ -304,6 +312,10 @@
 			}
 
 			delete this.newRecords[cId];
+		},
+
+		didUpdate: function (model, data) {
+
 		},
 
 		find: function (Model, id) {
@@ -450,6 +462,14 @@
 					}
 				}
 			}.bind(this));
+		},
+
+		modelAttributeChange: function (model, key, value, old) {
+			if (key in model.attributes) {
+				var cId = get(model, 'cId');
+				model.set('isDirty', true);
+				set(this.dirtyRecords, cId, model);
+			}
 		}
 	});
 	new Type('Store', Gelatin.Store);
