@@ -285,8 +285,8 @@ describe('Store', function () {
 		});
 
 		store.loadMany(Model, [
-			{ id: 1, name: 'Mark' },
-			{ id: 2, name: 'Bill' }
+			{ id: 1, name: 'mark' },
+			{ id: 2, name: 'bill' }
 		]);
 
 		var fma = store.filter(Model, function (model) {
@@ -297,12 +297,57 @@ describe('Store', function () {
 
 		expect(fma.models).to.have.length(1);
 		store.loadMany(Model, [
-			{ id: 3, name: 'Matt' },
+			{ id: 3, name: 'matt' },
 			{ id: 4, name: 'flanger' }
 		]);
 		expect(fma.models).to.have.length(2);
-		console.log(fma);
 
 		done();
+	});
+
+
+	it('should be able to destroy records using their deleteRecord method', function (done) {
+		var store = new Gelatin.Store({
+		});	
+
+		var Model = new Class({
+			Extends: Gelatin.Model
+		});
+
+		store.loadMany(Model, [
+			{ id: 1, name: 'mark' },
+			{ id: 2, name: 'bill' }
+		]);
+
+		done();
+	});
+
+
+	it('should call the transports create method when calling the store save method', function (done) {
+		var store = new Gelatin.Store({
+			transport: {
+				create: function (store, model) {
+					expect(model.isNew).to.be.true;
+					expect(store.newRecords).to.have.property(model.cId);
+
+					store.didCreate(model, { id: 1 });
+
+					expect(store.newRecords).to.not.have.property(model.cId);
+					expect(model.isNew).to.be.false;
+
+					done();
+				}
+			}
+		});
+
+		var Model = new Class({
+			Extends: Gelatin.Model
+		});
+
+		store.create(Model, {
+			name: 'Mark'
+		});
+
+		store.save();
 	});
 });

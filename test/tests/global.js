@@ -220,4 +220,17 @@ describe('global gelatin helpers and classes', function () {
 			done();
 		});
 	});
+
+	describe('Object', function () {
+		it('should have a equal method that checks for object equality', function (done) {
+			var objA = { name: 'Mark', age: 28, deep: { deepA: 1, deepB: 'Test' } };
+			var objB = { name: 'Mark', age: 28, deep: { deepA: 1, deepB: 'Test' } };
+			var objC = { name: 'Flanger', age: 28, deep: { deepA: 1, deepB: 'Test' } };
+
+			console.log(Object.equal(objA, objC));
+			expect(Object.equal(objA, objB)).to.be.true;
+			expect(Object.equal(objA, objC)).to.be.false;
+			done();
+		});
+	});
 });

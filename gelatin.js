@@ -5,6 +5,34 @@
 		this.extend(items);
 	};
 
+
+	Object.implement('equal', function (a, b) {
+		if (typeOf(a) !== typeOf(b)) return false;
+
+		var aKeys = Object.keys(a);
+		var bKeys = Object.keys(b);
+
+		if (aKeys.length !== bKeys.length) return false;
+
+		var i = aKeys.length;
+
+		while (i--) {
+			if (bKeys.indexOf(aKeys[i]) !== -1) {
+				if (typeOf(a[aKeys[i]]) !== 'object') {
+					if (a[aKeys[i]] !== b[bKeys[i]])
+						return false;
+				} else {
+					if (!Object.equal(a[aKeys[i]], b[aKeys[i]]))
+						return false;
+				}
+			} else {
+				return false;
+			}
+		}
+
+		return true;
+	});
+
 	// Setup our Gelatin namespace
 	var Gelatin = root.Gelatin = {};
 
@@ -260,6 +288,16 @@
 			}
 		},
 
+		save: function () {
+			var transport = this.options.transport;
+
+			if (transport.create) {
+				Object.each(this.newRecords, function (m, cId) {
+					transport.create(this, m);
+				}.bind(this));
+			}
+		},
+
 		create: function (Model, data) {
 			data = data || {};
 
@@ -273,16 +311,34 @@
 			set(m, 'cId', cId);
 			set(m, 'isLoaded', true);
 			set(m, 'isNew', true);
+			set(m, 'store', this);
 
 			if (id) {
 				modelMap.id2Cid[id] = cId;
 				modelMap.cIds.push(cId);
 				set(m, 'isNew', false);
+			} else {
+				set(this.newRecords, cId, m);
 			}
 
 			this.updateModelArrays(Model, cId);
 
 			return this.records[cId] = m;
+		},
+
+
+		didCreate: function (model, data) {
+			var cId = get(model, 'cId');
+			var pk = get(model, 'primaryKey');
+			var id = get(data, pk);
+
+			model.setProperties(data, true);
+
+			if (id) {
+				model.set('isNew', false);
+			}
+
+			delete this.newRecords[cId];
 		},
 
 		find: function (Model, id) {
@@ -323,7 +379,6 @@
 			var array = new Gelatin.ModelArray();
 			set(array, 'filter', filter);
 			this.addModelArray(Model, array);
-
 			return array;
 		},
 
@@ -442,10 +497,15 @@
 
 		cId: null,
 
-		id: false,
+		id: null,
 
 		isLoaded: false,
-		isNew: false
+		isNew: true,
+		store: null,
+
+		deleteRecord: function () {
+
+		}
 	});
 	new Type('Model', Gelatin.Model);
 
