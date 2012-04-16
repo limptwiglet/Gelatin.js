@@ -290,6 +290,7 @@ describe('Store', function () {
 		]);
 
 		var fma = store.filter(Model, function (model) {
+			console.log(model);
 			var name = model.get('name');
 
 			return /[m]/ig.test(name);

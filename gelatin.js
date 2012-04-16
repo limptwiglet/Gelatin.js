@@ -76,9 +76,9 @@
 		} else {
 			value = obj[key];
 
-			//if (typeOf(value) === 'object' && 'get' in value) {
-				//value = value.get(obj, key);
-			//}
+			if (typeOf(value) === 'function' && 'get' in value) {
+				value = value.get(obj, key);
+			}
 		}
 
 		return value;
@@ -101,41 +101,6 @@
 		return obj[key] = value;
 	};
 
-
-	// TODO: This needs to be refactored to work with getters and setters
-	var ComputedProperty = Gelatin.ComputedProperty = new Class({
-		Implements: [Options],
-
-		options: {
-
-		},
-
-		initialize: function (func, options) {
-			this.setOptions(options);
-			this.func = func;
-
-			return this;
-		},
-
-		property: function () {
-			this.props = Array.from(arguments);
-			return this;
-		},
-
-		get: function (obj, key) {
-			var ret = this.func.call(obj, key);
-			return ret;
-		},
-
-		set: function (obj, key, value) {
-			this.func.call(obj, key, value);			
-		}
-	});
-
-	var computed = Gelatin.computed = function () {
-		var computed = new ComputedProperty(arguments[0]);
-		return computed;
-	};
 
 	/**
 	 * Base class that allows observing of properties but only if properties 
@@ -501,7 +466,15 @@
 
 		isLoaded: false,
 		isNew: true,
+		isDirty: false,
 		store: null,
+
+		// Hash containing model attributes
+		attributes: {},
+
+		data: function () {
+
+		},
 
 		deleteRecord: function () {
 

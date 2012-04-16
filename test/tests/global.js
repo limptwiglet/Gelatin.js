@@ -1,13 +1,12 @@
 var expect = chai.expect;
+var get = Gelatin.get;
+var set = Gelatin.set;
 
 describe('global gelatin helpers and classes', function () {
 	describe('get', function () {
 		var obj = {
 			fname: 'Mark',
-			lname: 'Gerrard',
-			fullName: Gelatin.computed(function () {
-				return Gelatin.get(this, 'fname') + ' ' + Gelatin.get(this, 'lname');
-			}).property('fname', 'lname')
+			lname: 'Gerrard'
 		};
 
 		it('should return property', function (done) {
@@ -16,35 +15,20 @@ describe('global gelatin helpers and classes', function () {
 			done();	
 		});
 
-		//it('should return value from a computed property', function (done) {
-			//expect(Gelatin.get(obj, 'fullName')).to.eql(obj.fname + ' ' + obj.lname);
-			//done();
-		//});
+		it('should get attributes that are functions by binding and calling them', function (done) {
+			var o = {
+				fname: 'Mark',
+				sname: 'Gerrard',
 
-		//it('should get a property at a path "name.first"', function (done) {
-			//var obj = {
-				//name: {
-					//first: 'Mark'
-				//},
-				//foo: {
-					//bar: {
-						//baz: {
-							//bar: 'test'
-						//},
+				fullName: function () {
+					return this.fname + ' ' + this.sname;
+				}
+			};
 
-						//foo: Gelatin.computed(function () {
-							//return 'test';
-						//})
-					//}
-				//}
-			//};
+			expect(get(o, 'fullName')).to.eql(o.fname + ' ' + o.sname);
+			done();
+		});
 
-			//expect(Gelatin.get(obj, 'name.first')).to.eql(obj.name.first);
-			//expect(Gelatin.get(obj, 'foo.bar.baz.bar')).to.eql(obj.foo.bar.baz.bar);
-			//expect(Gelatin.get(obj, 'foo.bar.foo')).to.eql('test');
-			//expect(Gelatin.get(obj, 'foo.bar2')).to.not.exist;
-			//done();
-		//});
 
 		it('should call getUnknown for undefined keys', function (done) {
 			var obj = {
@@ -73,7 +57,7 @@ describe('global gelatin helpers and classes', function () {
 
 	describe('set', function () {
 		var obj = {
-			fullName: Gelatin.computed(function (key, value) {
+			fullName: function (key, value) {
 				if (arguments.length > 1) {
 					var parts = value.split(' ');
 					Gelatin.set(this, 'fname', parts[0]);
@@ -81,7 +65,7 @@ describe('global gelatin helpers and classes', function () {
 				}
 
 				return Gelatin.get(this, 'fname') + ' ' + Gelatin.get(this, 'lname');
-			}).property('fname', 'lname')
+			}
 		};
 
 		it('should set a property', function (done) {
