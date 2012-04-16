@@ -76,8 +76,8 @@
 		} else {
 			value = obj[key];
 
-			if (typeOf(value) === 'function' && 'get' in value) {
-				value = value.get(obj, key);
+			if (typeOf(value) === 'function') {
+				value = value.call(obj);
 			}
 		}
 
@@ -94,8 +94,8 @@
 
 		var prop = obj[key];
 
-		if (typeOf(prop) === 'object') {
-			return prop.set(obj, key, value);
+		if (typeOf(prop) === 'function') {
+			return prop.call(obj, key, value);
 		}
 
 		return obj[key] = value;
@@ -342,7 +342,7 @@
 
 		filter: function (Model, filter) {
 			var array = new Gelatin.ModelArray();
-			set(array, 'filter', filter);
+			set(array, 'filter', function () {return filter});
 			this.addModelArray(Model, array);
 			return array;
 		},
