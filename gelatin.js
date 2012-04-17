@@ -388,7 +388,7 @@
 
 		filter: function (Model, filter) {
 			var array = new Gelatin.ModelArray();
-			set(array, 'filter', function () {return filter});
+			set(array, 'filter', filter);
 			this.addModelArray(Model, array);
 			return array;
 		},
