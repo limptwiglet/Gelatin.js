@@ -265,7 +265,7 @@
 
 			if (transport.update) {
 				Object.each(this.dirtyRecords, function (m, cId) {
-					transport.create(this, m);
+					transport.update(this, m);
 				}.bind(this));
 			}
 		},
@@ -315,7 +315,14 @@
 		},
 
 		didUpdate: function (model, data) {
+			var cId = get(model, 'cId');
+			delete this.dirtyRecords[cId];
 
+			if (data) {
+				model.setProperties(data);
+			}
+
+			model.set('isDirty', false);
 		},
 
 		find: function (Model, id) {

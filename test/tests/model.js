@@ -383,10 +383,14 @@ describe('Store', function () {
 	});
 
 	it('should move record out of dirty state when store saves', function (done) {
+		var cId;
 		var store = new Gelatin.Store({
 			transport: {
 				update: function (store, model) {
 					store.didUpdate(model, { fname: 'fook' });
+					expect(store.dirtyRecords).to.not.have.property(cId);
+					expect(model.isDirty).to.be.false;
+					done();
 				}
 			}
 		});
@@ -402,7 +406,7 @@ describe('Store', function () {
 		var m = store.create(Model, {
 		});
 
-		var cId = get(m, 'cId');
+		cId = get(m, 'cId');
 		m.set('fname', 'fook');
 		expect(store.dirtyRecords).to.have.property(cId);
 
