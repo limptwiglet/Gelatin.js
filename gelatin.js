@@ -6,32 +6,32 @@
 	};
 
 
-	Object.implement('equal', function (a, b) {
-		if (typeOf(a) !== typeOf(b)) return false;
+	//Object.implement('equal', function (a, b) {
+		//if (typeOf(a) !== typeOf(b)) return false;
 
-		var aKeys = Object.keys(a);
-		var bKeys = Object.keys(b);
+		//var aKeys = Object.keys(a);
+		//var bKeys = Object.keys(b);
 
-		if (aKeys.length !== bKeys.length) return false;
+		//if (aKeys.length !== bKeys.length) return false;
 
-		var i = aKeys.length;
+		//var i = aKeys.length;
 
-		while (i--) {
-			if (bKeys.indexOf(aKeys[i]) !== -1) {
-				if (typeOf(a[aKeys[i]]) !== 'object') {
-					if (a[aKeys[i]] !== b[bKeys[i]])
-						return false;
-				} else {
-					if (!Object.equal(a[aKeys[i]], b[aKeys[i]]))
-						return false;
-				}
-			} else {
-				return false;
-			}
-		}
+		//while (i--) {
+			//if (bKeys.indexOf(aKeys[i]) !== -1) {
+				//if (typeOf(a[aKeys[i]]) !== 'object') {
+					//if (a[aKeys[i]] !== b[bKeys[i]])
+						//return false;
+				//} else {
+					//if (!Object.equal(a[aKeys[i]], b[aKeys[i]]))
+						//return false;
+				//}
+			//} else {
+				//return false;
+			//}
+		//}
 
-		return true;
-	});
+		//return true;
+	//});
 
 
 
@@ -527,8 +527,14 @@
 		attributes: {},
 
 		data: function () {
+			var obj = {};
 
-		},
+			for (var k in this.attributes) {
+				obj[k] = get(this, k);
+			}
+
+			return obj;
+		}.computed(),
 
 		deleteRecord: function () {
 

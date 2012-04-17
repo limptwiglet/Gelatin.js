@@ -413,3 +413,28 @@ describe('Store', function () {
 		store.save();
 	});
 });
+
+
+describe('Model', function () {
+	it('should have a data attribute that returns clean data', function (done) {
+		var Model = new Class({
+			Extends: Gelatin.Model,
+
+			attributes: {
+				fname: { type: 'string' },
+				sname: { type: 'string' }
+			}
+		});
+
+		var oD = {
+			fname: 'Foo',
+			sname: 'Bar'
+		};
+
+		var m = new Model(oD);
+
+		var d = m.get('data');
+		expect(d).to.eql(oD);
+		done();
+	});
+});
