@@ -33,6 +33,8 @@
 		return true;
 	});
 
+
+
 	// Setup our Gelatin namespace
 	var Gelatin = root.Gelatin = {};
 
@@ -76,8 +78,8 @@
 		} else {
 			value = obj[key];
 
-			if (typeOf(value) === 'function') {
-				value = value.call(obj);
+			if (typeOf(value) === 'computedproperty') {
+				value = value.get(obj, key);
 			}
 		}
 
@@ -94,12 +96,37 @@
 
 		var prop = obj[key];
 
-		if (typeOf(prop) === 'function') {
-			return prop.call(obj, key, value);
+		if (typeOf(prop) === 'computedproperty') {
+			return prop.set(obj, key, value);
 		}
 
 		return obj[key] = value;
 	};
+
+
+	var ComputedProperty = Gelatin.ComputedProperty = new Class({
+		initialize: function (func) {
+			this.func = func;
+		},
+
+		get: function (obj, key) {
+			return this.func.call(obj, key);		
+		},
+
+		set: function (obj, key, value) {
+			return this.func.call(obj, key, value);
+		}
+	});
+	new Type('ComputedProperty', ComputedProperty);
+
+	Function.implement('computed', function () {
+		var props = Array.from(arguments);
+
+		var cp = new ComputedProperty(this);
+
+		return cp;
+	});
+
 
 
 	/**

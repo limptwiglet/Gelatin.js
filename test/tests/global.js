@@ -15,20 +15,6 @@ describe('global gelatin helpers and classes', function () {
 			done();	
 		});
 
-		it('should get attributes that are functions by binding and calling them', function (done) {
-			var o = {
-				fname: 'Mark',
-				sname: 'Gerrard',
-
-				fullName: function () {
-					return this.fname + ' ' + this.sname;
-				}
-			};
-
-			expect(get(o, 'fullName')).to.eql(o.fname + ' ' + o.sname);
-			done();
-		});
-
 
 		it('should call getUnknown for undefined keys', function (done) {
 			var obj = {
@@ -57,15 +43,6 @@ describe('global gelatin helpers and classes', function () {
 
 	describe('set', function () {
 		var obj = {
-			fullName: function (key, value) {
-				if (arguments.length > 1) {
-					var parts = value.split(' ');
-					Gelatin.set(this, 'fname', parts[0]);
-					Gelatin.set(this, 'lname', parts[1]);
-				}
-
-				return Gelatin.get(this, 'fname') + ' ' + Gelatin.get(this, 'lname');
-			}
 		};
 
 		it('should set a property', function (done) {
@@ -79,11 +56,56 @@ describe('global gelatin helpers and classes', function () {
 			expect(Gelatin.get(obj, 'test')).to.eql('test');
 			done();
 		});
+	});
 
-		it('computed property should set properties', function (done) {
-			Gelatin.set(obj, 'fullName', 'Mark Gerrard');
-			expect(obj.fname).to.eql('Mark');
-			expect(obj.lname).to.eql('Gerrard');
+	describe('ComputedProperty', function () {
+		it('should bind the computed property to its parent objects scope', function (done) {
+			var obj = {
+				fname: 'Mark',
+				sname: 'Gerrard',
+				fullName: function () {
+					expect(this.fname).to.exist;
+					done();
+				}.computed()
+			};
+
+			get(obj, 'fullName');
+		});
+
+		it('should call the computed property to get a value', function (done) {
+			var obj = {
+				fname: 'Mark',
+				sname: 'Gerrard',
+				fullName: function () {
+					return get(this, 'fname') + ' ' + get(this, 'sname');
+				}.computed()
+			};
+
+			var fullName = get(obj, 'fullName');
+			expect(fullName).to.eql(obj.fname + ' ' + obj.sname);
+			done();
+		});
+
+		it('should call the computed property to set a value', function (done) {
+			var obj = {
+				fname: 'Mark',
+				sname: 'Gerrard',
+				fullName: function (key, value) {
+					if (arguments.length > 1) {
+						var parts = value.split(' ');
+						set(this, 'fname', parts[0]);
+						set(this, 'sname', parts[1]);
+					}
+
+					return get(this, 'fname') + ' ' + get(this, 'sname');
+				}.computed()
+			};
+
+			set(obj, 'fullName', 'Bill Hicks');
+
+			var fullName = get(obj, 'fullName');
+			expect(fullName).to.eql('Bill Hicks');
+			
 			done();
 		});
 	});
