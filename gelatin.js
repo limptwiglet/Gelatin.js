@@ -6,35 +6,6 @@
 	};
 
 
-	//Object.implement('equal', function (a, b) {
-		//if (typeOf(a) !== typeOf(b)) return false;
-
-		//var aKeys = Object.keys(a);
-		//var bKeys = Object.keys(b);
-
-		//if (aKeys.length !== bKeys.length) return false;
-
-		//var i = aKeys.length;
-
-		//while (i--) {
-			//if (bKeys.indexOf(aKeys[i]) !== -1) {
-				//if (typeOf(a[aKeys[i]]) !== 'object') {
-					//if (a[aKeys[i]] !== b[bKeys[i]])
-						//return false;
-				//} else {
-					//if (!Object.equal(a[aKeys[i]], b[aKeys[i]]))
-						//return false;
-				//}
-			//} else {
-				//return false;
-			//}
-		//}
-
-		//return true;
-	//});
-
-
-
 	// Setup our Gelatin namespace
 	var Gelatin = root.Gelatin = {};
 
