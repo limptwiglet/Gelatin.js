@@ -239,7 +239,6 @@ describe('Store', function () {
 		});
 
 		var ma = store.findAll(Model);
-		expect(ma.models).to.have.length(0);
 	});
 
 
@@ -251,6 +250,8 @@ describe('Store', function () {
 					expect(Model).to.exist;
 					expect(query).to.exist;
 					expect(array).to.exist;
+
+					console.log(arguments);
 
 					var models = store.loadMany(Model, [
 						{
@@ -272,7 +273,6 @@ describe('Store', function () {
 		var ma = store.query(Model, {
 			name: 'Mark'
 		});
-		done();
 	});
 
 
