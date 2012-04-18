@@ -480,6 +480,100 @@
 	new Type('Store', Gelatin.Store);
 
 
+	Gelatin.RESTTransport = new Class({
+		Implements: [Options],
+
+		options: {
+			baseUrl: ''
+		},
+
+		initialize: function (options) {
+			this.setOptions(options);
+		},
+
+		getUrl: function (Model, plural) {
+			var url = Model.prototype.url;
+
+			if (plural === true) {
+				url+= 's';
+			}
+
+			url = this.options.baseUrl + url + '/';
+
+			return url;
+		},
+
+		find: function (store, Model, id) {
+			var req = new Request.JSON();
+
+			var options = {
+				url: this.getUrl(Model) + id,
+
+				onSuccess: function (data) {
+				
+				},
+
+				onFailure: function () {
+					console.log('here');
+				}
+			};
+
+			req.setOptions(options);
+			req.send();
+		},
+
+		findAll: function (store, Model) {
+			var req = new Request.JSON();
+
+			var options = {
+				url: this.getUrl(Model, true),
+
+				onSuccess: function (data) {
+						
+				},
+
+				onFailure: function () {
+					console.log('here');
+				}
+			};
+
+			req.setOptions(options);
+			req.send();
+		},
+
+		query: function (store, Model, query, array) {
+			var req = new Request.JSON();
+
+			var options = {
+				url: this.getUrl(Model, true),
+
+				onSuccess: function (data) {
+						
+				},
+
+				onFailure: function () {
+					console.log('here');
+				}
+			};
+
+			req.setOptions(options);
+			req.get(query);
+		},
+
+		update: function (store, model) {
+
+		},
+
+		create: function (store, model) {
+
+		},
+
+		destroy: function (store, model) {
+
+		}
+	});
+
+
 	Gelatin.Model = new Class({
 		Extends: Gelatin.Object,
 

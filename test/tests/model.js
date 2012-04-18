@@ -438,3 +438,26 @@ describe('Model', function () {
 		done();
 	});
 });
+
+
+describe('RESTTransport', function () {
+	it('should make ajax call to find a single model /api/model/1', function (done) {
+		var store = new Gelatin.Store({
+			transport: new Gelatin.RESTTransport({
+				baseUrl: '/api'
+			})
+		});
+
+		var Model = new Class({
+			Extends: Gelatin.Model,
+
+			url: '/model'
+		});
+
+		var m = store.find(Model, 1);
+		var m = store.findAll(Model);
+		var m = store.query(Model, { name: 'test', age: 'test' });
+
+		done();
+	});
+});
