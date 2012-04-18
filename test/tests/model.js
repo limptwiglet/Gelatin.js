@@ -251,8 +251,6 @@ describe('Store', function () {
 					expect(query).to.exist;
 					expect(array).to.exist;
 
-					console.log(arguments);
-
 					var models = store.loadMany(Model, [
 						{
 							id: 1,
@@ -281,7 +279,10 @@ describe('Store', function () {
 		});	
 
 		var Model = new Class({
-			Extends: Gelatin.Model
+			Extends: Gelatin.Model,
+			attributes: {
+				name: 'string'
+			}
 		});
 
 		store.loadMany(Model, [
@@ -296,11 +297,18 @@ describe('Store', function () {
 		});
 
 		expect(fma.models).to.have.length(1);
+
 		store.loadMany(Model, [
 			{ id: 3, name: 'matt' },
 			{ id: 4, name: 'flanger' }
 		]);
+
 		expect(fma.models).to.have.length(2);
+
+		var m = store.find(Model, 3);
+		m.set('name', 'poop');
+
+		expect(fma.models).to.have.length(1);
 
 		done();
 	});

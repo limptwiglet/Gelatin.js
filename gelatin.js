@@ -233,6 +233,7 @@
 
 		getModelMap: function (Model) {
 			var modelId = get(Model, '_modelId');
+			console.log(modelId);
 
 			if (!modelId) {
 				modelId = String.uniqueID();
@@ -400,6 +401,7 @@
 				m = new Model(data);
 				cId = set(m, 'cId', String.uniqueID());
 				set(this.records, cId, m);
+				m.addEvent('change', this.modelAttributeChange.bind(this, m));
 			} else {
 				m = get(this.records, cId);
 			}
@@ -474,6 +476,8 @@
 				var cId = get(model, 'cId');
 				model.set('isDirty', true);
 				set(this.dirtyRecords, cId, model);
+
+				this.updateModelArrays(model.$constructor, cId);
 			}
 		}
 	});
