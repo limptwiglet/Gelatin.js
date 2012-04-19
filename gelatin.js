@@ -287,19 +287,13 @@
 
 			var modelMap = this.getModelMap(Model);
 
-			var cId = String.uniqueID();
+			var m = this.generateModel(Model, id, data);
 
-			var m = new Model(data);
-			set(m, 'cId', cId);
-			set(m, 'isLoaded', true);
-			set(m, 'isNew', true);
-			set(m, 'store', this);
-			m.addEvent('change', this.modelAttributeChange.bind(this, m));
+			var cId = m.get('cId'); 
 
 			if (id) {
 				modelMap.id2Cid[id] = cId;
 				modelMap.cIds.push(cId);
-				set(m, 'isNew', false);
 			} else {
 				set(this.newRecords, cId, m);
 			}
@@ -345,6 +339,7 @@
 
 			m.set('isDestroyed', true);
 			this.updateModelArrays(Model, cId);
+			this.records[cId] = undefined;
 			delete this.records[cId];
 		},
 
@@ -367,18 +362,41 @@
 			if (cId) {
 				return get(this.records, cId);
 			} else {
-				var m = new Model();
-				cId = set(m, 'cId', String.uniqueID());
-				modelMap.id2Cid[id] = cId;
+				var m = this.generateModel(Model, id);
 				set(m, 'isLoaded', false);
-
-				set(this.records, cId, m);
 
 				if (this.options.transport)
 					this.options.transport.find(this, Model, id);
 
 				return m;
 			}
+		},
+
+		generateModel: function (Model, id, data) {
+			var modelMap = this.getModelMap(Model);
+
+			var m = new Model(data);
+			cId = set(m, 'cId', String.uniqueID());
+
+			modelMap.id2Cid[id] = cId;
+			modelMap.cIds.push(cId);
+
+			set(m, 'isLoaded', true);
+			set(m, 'store', this);
+
+			var isNew = true;
+
+			if (id && modelMap.id2Cid[id]) {
+				isNew = false;
+			}
+
+			set(m, 'isNew', isNew);
+
+			set(this.records, cId, m);
+
+			m.addEvent('change', this.modelAttributeChange.bind(this, m));
+
+			return m;
 		},
 
 		query: function(Model, query) {
@@ -433,18 +451,11 @@
 
 			// If no client ID exists we need to create a new model instance
 			if (!cId) {
-				m = new Model(data);
-				cId = set(m, 'cId', String.uniqueID());
-				set(m, 'store', this);
-				set(this.records, cId, m);
-				m.addEvent('change', this.modelAttributeChange.bind(this, m));
+				m = this.generateModel(Model, id, data);
+				cId = get(m, 'cId');
 			} else {
 				m = get(this.records, cId);
 			}
-
-			// Update the model map with the client id
-			modelMap.id2Cid[id] = cId;
-			modelMap.cIds.push(cId);
 
 			m.set('isLoaded', true);
 			this.updateModelArrays(Model, cId);
