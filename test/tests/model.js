@@ -314,8 +314,13 @@ describe('Store', function () {
 	});
 
 
-	it('should be able to destroy records using their deleteRecord method', function (done) {
+	it('should be able to destroy records using their destroy method', function (done) {
 		var store = new Gelatin.Store({
+			transport: {
+				destroy: function (store, Model, model) {
+					store.didDestroy(model);
+				}
+			}
 		});	
 
 		var Model = new Class({
@@ -326,6 +331,21 @@ describe('Store', function () {
 			{ id: 1, name: 'mark' },
 			{ id: 2, name: 'bill' }
 		]);
+
+		var m = store.find(Model, 1);
+		var fma = store.findAll(Model);
+		var cId = m.get('cId');
+
+		expect(fma.models).to.have.length(2);
+		expect(m).to.exist;
+
+		m.destroy();
+
+		expect(store.destroyRecords).to.have.property(cId);
+
+		store.save();
+
+		expect(fma.models).to.have.length(1);
 
 		done();
 	});

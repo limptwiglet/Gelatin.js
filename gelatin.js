@@ -229,11 +229,11 @@
 			this.newRecords = {};
 			this.modelArrays = {};
 			this.dirtyRecords = {};
+			this.destroyRecords = {};
 		},
 
 		getModelMap: function (Model) {
 			var modelId = get(Model, '_modelId');
-			console.log(modelId);
 
 			if (!modelId) {
 				modelId = String.uniqueID();
@@ -256,17 +256,28 @@
 		save: function () {
 			var transport = this.options.transport;
 
-			if (transport.create) {
+			if (transport && transport.create) {
 				Object.each(this.newRecords, function (m, cId) {
 					transport.create(this, m);
 				}.bind(this));
 			}
 
-			if (transport.update) {
+			if (transport && transport.update) {
 				Object.each(this.dirtyRecords, function (m, cId) {
 					transport.update(this, m);
 				}.bind(this));
 			}
+
+			// Destroy records marked for destruction
+			var destroy = this.destroyRecords;
+			
+			Object.each(this.destroyRecords, function (m, cId) {
+				if (transport && transport.destroy) {
+					transport.destroy(this, m.$constructor, m);
+				} else {
+					this.didDestroy(m);
+				}
+			}.bind(this));
 		},
 
 		create: function (Model, data) {
@@ -311,6 +322,30 @@
 			}
 
 			delete this.newRecords[cId];
+		},
+
+		destroy: function (Model, cId) {
+			var modelMap = this.getModelMap(Model);
+			var model = get(this.records, cId);
+			
+			set(this.destroyRecords, cId, model);
+		},
+
+		didDestroy: function (m) {
+			var Model = m.$constructor;
+			var modelMap = this.getModelMap(m.$constructor);
+			var cId = get(m, 'cId');
+			var id = get(m, get(m, 'primaryKey'));
+
+			modelMap.cIds.splice(modelMap.cIds.indexOf(cId), 1);
+
+			if (id) {
+				delete modelMap.id2Cid[id];
+			}
+
+			m.set('isDestroyed', true);
+			this.updateModelArrays(Model, cId);
+			delete this.records[cId];
 		},
 
 		didUpdate: function (model, data) {
@@ -400,6 +435,7 @@
 			if (!cId) {
 				m = new Model(data);
 				cId = set(m, 'cId', String.uniqueID());
+				set(m, 'store', this);
 				set(this.records, cId, m);
 				m.addEvent('change', this.modelAttributeChange.bind(this, m));
 			} else {
@@ -436,6 +472,10 @@
 
 				if (!filter || filter(m)) {
 					add = true;
+				}
+
+				if (m.get('isDestroyed')) {
+					add = false;
 				}
 
 				if (add && !inArray) {
@@ -605,8 +645,13 @@
 			return obj;
 		}.computed(),
 
-		deleteRecord: function () {
+		destroy: function () {
+			var store = get(this, 'store');
+			var cId = get(this, 'cId');
 
+			if (store) {
+				store.destroy(this.$constructor, cId);
+			}
 		}
 	});
 	new Type('Model', Gelatin.Model);
