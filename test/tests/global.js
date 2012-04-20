@@ -141,89 +141,30 @@ describe('global gelatin helpers and classes', function () {
 			done();
 		});
 
-		it('should have observerable properties', function (done) {
-			var obj = new Gelatin.Object({
-				fname: 'Mark',
-				lname: 'Gerrard'
-			});
 
-			obj.addEvent('change:fname', function (key, value, oldValue) {
-				expect(key).to.eql('fname');
-				expect(oldValue).to.eql('Mark');
-				expect(value).to.eql('John');
+		describe('Observers', function (done) {
+			it('should mixin Events when observering an object', function (done) {
+				var obj = {};
+
+				expect(obj).to.not.have.property('$events');
+
+				Gelatin.addObserver(obj, 'name', function() {});
+
+				expect(obj).to.have.property('$events');
 
 				done();
 			});
 
-			obj.set('fname', 'John');
-		});
+			it('should add an event handler to the objects $events property when calling addObserver', function (done) {
+				var obj = {};
 
+				Gelatin.addObserver(obj, 'name', function () {
+				});
 
-		it('should be able to trigger observers for given keys', function (done) {
-			var obj = new Gelatin.Object({
-				fname: 'Mark'
+				console.log(obj.$events);
+				done();
+
 			});
-
-			var c = 0;
-			var handler = function (key, value, oldValue) {
-				if (++c >= 1) {
-					expect(key).to.eql('fname');
-					expect(value).to.eql('Bill');
-					expect(oldValue).to.eql('Mark');
-					done();
-				}
-			};
-
-			obj.set('fname', 'Bill', true);
-			obj.addEvent('change:hasChanged', function () {
-				console.log('here');
-			});
-			obj.addEvent('change:fname', handler);
-
-			obj.triggerChange('fname');
-
-		});
-
-		it('should be able to remove observers', function (done) {
-			var obj = new Gelatin.Object({
-				fname: 'Mark',
-				lname: 'Gerrard'
-			});
-
-			var observer1 = function () {};
-			var observer2 = function () {};
-
-			obj.removeEvent('fname', observer1);
-			obj.removeEvent('fname', observer2);
-
-			done();
-		});
-
-		it('should be able to change properties silently', function (done) {
-			var obj = new Gelatin.Object({
-			
-			});
-
-			obj.addEvent('change:fname', function () {
-				throw new Error('Observer should not be triggered');
-			});
-
-			obj.set('fname', 'silent night', true);
-			done();
-		});
-
-		it('should not trigger observers if properties hasnt changed value', function (done) {
-			var obj = new Gelatin.Object({
-				fname: 'Mark',
-				lname: 'Gerrard'
-			});
-
-			obj.addEvent('change:fname', function () {
-				throw new Error('Observer triggered, fail!');
-			});
-
-			obj.set('fname', obj.get('fname'));
-			done();
 		});
 	});
 });
