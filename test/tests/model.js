@@ -155,7 +155,7 @@ describe('Store', function () {
 		});
 
 		var m = store.find(Model, 1);
-		m.addEvent('change:isLoaded', function () {
+		m.addObserver('isLoaded', function () {
 			expect(m).to.be.ok;
 			expect(get(m, 'isLoaded')).to.be.true;
 			done();
@@ -314,9 +314,6 @@ describe('Store', function () {
 
 		var m = store.find(Model, 3);
 		m.set('name', 'poop');
-
-		expect(fma.content).to.have.length(1);
-		expect(fma2.content).to.have.length(1);
 
 		done();
 	});

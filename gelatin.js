@@ -73,7 +73,46 @@
 			return prop.set(obj, key, value);
 		}
 
-		return obj[key] = value;
+		obj[key] = value;
+
+		triggerObservers(obj, key);
+
+		return obj[key];
+	};
+
+
+	var Observerable = new Class({
+		Extends: Events,
+		_previousAttributes: {}
+	});
+
+
+	var hasObservers = function (obj) {
+		return typeOf(obj['$events']) == 'object';
+	};
+
+	var addObserver = Gelatin.addObserver = function (obj, key, fn) {
+		if (!hasObservers(obj)) {
+			Object.append(obj, new Observerable);
+
+			if (key !== '*')
+				obj._previousAttributes[key] = get(obj, key);
+		}
+
+		obj.addEvent((key === '*' ? key : 'change:' + key), fn);
+	};
+
+	var triggerObservers = Gelatin.triggerObservers = function (obj, key) {
+		if (!hasObservers(obj)) return false;
+
+		var old = obj._previousAttributes[key];
+		var value = get(obj, key);
+
+		if (old !== value) {
+			obj._previousAttributes[key] = value;
+			obj.fireEvent('*', [key, value, old]);
+			obj.fireEvent('change:' + key, [key, value, old]);
+		}
 	};
 
 
@@ -107,8 +146,6 @@
 	 * are accessed via the provided get and set methods
 	 */
 	var Obj = Gelatin.Object = new Class({
-		Implements: [Events],
-
 		// TODO: Remove meta properties this shouldnt be needed especially
 		// for hasChanged
 		meta: {
@@ -134,16 +171,13 @@
 		 */
 		get: function (key) {
 			return get(this, key);
-		}.overloadGetter(),
+		},
 
 		
 		/**
 		 * This should be a no-op function in most cases
 		 */
 		getUnknown: function (key) {
-			if (key in this.meta) {
-				return get(this.meta, key);
-			}
 			return undefined;
 		},
 
@@ -155,20 +189,7 @@
 		 * @param {Boolean} - Silent makes the change not trigger listeners
 		 */
 		set: function (key, value, silent) {
-			var oldValue = this.get(key);
-
-			if (oldValue !== value) {
-				value = set(this, key, value);
-				this._prevAttrs[key] = oldValue;
-				set(this, 'hasChanged', true);
-
-				if (silent == undefined || silent != true) {
-					this.fireEvent('change', [key, value, oldValue]);
-					this.triggerChange('hasChanged', key);
-				}
-			}
-
-			return value;
+			return set(this, key, value);
 		},
 
 		/**
@@ -184,10 +205,11 @@
 			keys.each(function (key) {
 				this.set(key, obj[key], true);	
 			}.bind(this));
+		},
 
-			keys.push('hasChanged');
 
-			this.triggerChange.attempt(keys, this);
+		addObserver: function (key, fn) {
+			addObserver(this, key, fn);
 		},
 
 		/**
@@ -374,7 +396,8 @@
 				delete modelMap.id2Cid[id];
 			}
 
-			m.set('isDestroyed', true);
+			set(m, 'store', null); // Detach the model from the store
+			m.set('isDestroyed', true); // Mark the model as being destroyed
 			this.updateModelArrays(Model, cId);
 			this.records[cId] = undefined;
 			delete this.records[cId];
@@ -431,7 +454,7 @@
 
 			set(this.records, cId, m);
 
-			m.addEvent('change', this.modelAttributeChange.bind(this, m));
+			m.addObserver('*', this.modelAttributeChange.bind(this, m));
 
 			return m;
 		},
