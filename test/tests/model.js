@@ -182,7 +182,7 @@ describe('Store', function () {
 		]);
 
 		var ma = store.findAll(Model);
-		expect(ma.models).to.have.length(2);
+		expect(ma.content).to.have.length(2);
 		done();
 	});
 
@@ -195,7 +195,7 @@ describe('Store', function () {
 
 
 		var ma = store.findAll(Model);
-		expect(ma.models).to.have.length(0);
+		expect(ma.content).to.have.length(0);
 
 		var models = store.loadMany(Model, [
 			{
@@ -205,7 +205,7 @@ describe('Store', function () {
 		]);
 
 		expect(models).to.have.length(1);
-		expect(ma.models).to.have.length(1);
+		expect(ma.content).to.have.length(1);
 
 		done();
 	});
@@ -226,7 +226,7 @@ describe('Store', function () {
 					]);
 					var ma = store.findAll(Model);
 
-					expect(ma.models).to.have.length(2);
+					expect(ma.content).to.have.length(2);
 					expect(store).to.exist;
 					expect(Model).to.exist;
 
@@ -296,19 +296,27 @@ describe('Store', function () {
 			return /[m]/ig.test(name);
 		});
 
-		expect(fma.models).to.have.length(1);
+		var fma2 = store.filter(Model, function (model) {
+			var name = model.get('name');
+
+			return /[p]/ig.test(name);
+		});
+
+		expect(fma2.content).to.have.length(0);
+		expect(fma.content).to.have.length(1);
 
 		store.loadMany(Model, [
 			{ id: 3, name: 'matt' },
 			{ id: 4, name: 'flanger' }
 		]);
 
-		expect(fma.models).to.have.length(2);
+		expect(fma.content).to.have.length(2);
 
 		var m = store.find(Model, 3);
 		m.set('name', 'poop');
 
-		expect(fma.models).to.have.length(1);
+		expect(fma.content).to.have.length(1);
+		expect(fma2.content).to.have.length(1);
 
 		done();
 	});
@@ -336,7 +344,7 @@ describe('Store', function () {
 		var fma = store.findAll(Model);
 		var cId = m.get('cId');
 
-		expect(fma.models).to.have.length(2);
+		expect(fma.content).to.have.length(2);
 		expect(m).to.exist;
 
 		m.destroy();
@@ -345,7 +353,7 @@ describe('Store', function () {
 
 		store.save();
 
-		expect(fma.models).to.have.length(1);
+		expect(fma.content).to.have.length(1);
 
 		done();
 	});

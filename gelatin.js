@@ -210,6 +210,38 @@
 		}
 	});
 
+	var Enumerable = Gelatin.Enumerable = new Class({
+		each: function (fn) {
+			var content = get(this, 'content');
+			content.each(fn.bind(this));
+		},
+
+		getEach: function (key) {
+			var content = get(this, 'content');
+
+			return content.map(function (item) {
+				return get(item, key);
+			});
+		},
+
+		push: function (item) {
+			var content = get(this, 'content');
+			content.push(item);
+			set(this, 'content', content);
+		},
+
+		indexOf: function (item) {
+			return this.content.indexOf(item);
+		},
+
+		remove: function (item) {
+			var idx = this.indexOf(item);
+			var content = get(this, 'content');
+
+			content.splice(idx, 1);
+			set(this, 'content', content);
+		}
+	});
 
 	/**
 	 * A data store class for handling updating models via an adapter
@@ -558,9 +590,11 @@
 			return url;
 		},
 
-		find: function (store, Model, id) {
-			var req = new Request.JSON();
+		createRequest: function (options) {
+			return new Request.JSON(options);
+		},
 
+		find: function (store, Model, id) {
 			var options = {
 				url: this.getUrl(Model) + id,
 
@@ -573,7 +607,8 @@
 				}
 			};
 
-			req.setOptions(options);
+			var req = this.createRequest(options);
+
 			req.send();
 		},
 
@@ -670,35 +705,12 @@
 
 	Gelatin.ModelArray = new Class({
 		Extends: Gelatin.Object,
+		Implements: Enumerable,
 
 		initialize: function () {
 			this.parent();
-			this.models = Array.from(arguments);
-			this.length = this.models.length;
-		}
-	});
-
-	Gelatin.ModelArray.implement({
-		indexOf: function (model) {
-			var models = this.get('models');
-			return models.indexOf(model);
-		},
-
-		remove: function (model) {
-			var models = this.get('models');
-			models.splice(models.indexOf(model), 1);
-			this.set('models', models);
-		},
-
-		each: function (fn) {
-			Array.each(this.models, fn);
-		},
-
-		push: function (model) {
-			var models = this.get('models');
-			model = models.push(model);
-			this.set('models', models);
-			return model;
+			this.content = Array.from(arguments);
+			this.length = this.content.length;
 		}
 	});
 
