@@ -5,7 +5,6 @@
 		this.extend(items);
 	};
 
-
 	// Setup our Gelatin namespace
 	var Gelatin = root.Gelatin = {};
 
@@ -21,6 +20,19 @@
 	};
 
 
+	var getPath = Gelatin.getPath = function (path, context) {
+		context = context || window;	
+		path = ~path.indexOf('.') ? path.split('.') : false;
+
+		var root = context;
+
+		while(path.length) {
+			root = get(root, path.shift());
+		}
+
+		return root;
+	};
+
 	/**
 	 * Returns the property at the given path
 	 *
@@ -29,18 +41,8 @@
 	 * @return Returns the property
 	 */
 	var get = Gelatin.get = function (obj, key) {
+		var value;
 		key = key.toString();
-		var path = ~key.indexOf('.') ? key.split('.') : false, value;
-
-		if (path) {
-			var root = obj;
-
-			while(path.length) {
-				root = get(root, path.shift());
-			}
-
-			return root;
-		}
 
 		if (!(key in obj)) {
 			if (typeOf(obj.getUnknown) === 'function') {
@@ -210,6 +212,9 @@
 		}
 	});
 
+	/**
+	 * Enumerable mixin 
+	 */
 	var Enumerable = Gelatin.Enumerable = new Class({
 		each: function (fn) {
 			var content = get(this, 'content');
@@ -567,6 +572,9 @@
 	new Type('Store', Gelatin.Store);
 
 
+	/**
+	 * RESTTransport
+	 */
 	Gelatin.RESTTransport = new Class({
 		Implements: [Options],
 
