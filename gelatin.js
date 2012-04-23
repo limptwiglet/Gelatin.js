@@ -611,13 +611,12 @@
 				},
 
 				onFailure: function () {
-					console.log('here');
 				}
 			};
 
 			var req = this.createRequest(options);
 
-			req.send();
+			//req.send();
 		},
 
 		findAll: function (store, Model) {
@@ -631,12 +630,11 @@
 				},
 
 				onFailure: function () {
-					console.log('here');
 				}
 			};
 
 			req.setOptions(options);
-			req.send();
+			//req.send();
 		},
 
 		query: function (store, Model, query, array) {
@@ -650,12 +648,11 @@
 				},
 
 				onFailure: function () {
-					console.log('here');
 				}
 			};
 
 			req.setOptions(options);
-			req.get(query);
+			//req.get(query);
 		},
 
 		update: function (store, model) {
