@@ -8,7 +8,9 @@
     "type": "git",
     "url": "git://github.com/limptwiglet/Gelatin.js.git"
   },
-  "dependencies": {},
+  "dependencies": {
+	"grunt": ">=0.3.9"
+  },
   "devDependencies": {},
   "optionalDependencies": {},
   "engines": {
