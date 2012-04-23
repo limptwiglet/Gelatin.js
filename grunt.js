@@ -1,5 +1,6 @@
 module.exports = function (grunt) {
 	var FILES = [
+			'<%= dirs.src %>core/core.js',
 			'<%= dirs.src %>core/get.js',
 			'<%= dirs.src %>core/set.js',
 			'<%= dirs.src %>core/object.js'
