@@ -1,0 +1,17 @@
+{
+  "author": "Mark Gerrard <hello@markgerrard.com> (markgerrard.com)",
+  "name": "gelatin.js",
+  "description": "mootools kvo and data framework",
+  "version": "0.0.1",
+  "homepage": "http://github.com/limptwiglet/gelatin.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/limptwiglet/Gelatin.js.git"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "engines": {
+    "node": "*"
+  }
+}
