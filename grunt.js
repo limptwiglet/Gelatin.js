@@ -27,6 +27,11 @@ module.exports = function (grunt) {
 				src: FILES,
 				dest: '<%= dirs.dest %>gelatin-<%= pkg.version %>.js'
 			}
+		},
+
+		watch: {
+			files: FILES,
+			tasks: 'concat:dist'
 		}
 	});
 
