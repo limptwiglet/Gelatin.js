@@ -1,23 +1,8 @@
 (function () {
 	var root = this;
 
-	Class.Mutators.Static = function (items) {
-		this.extend(items);
-	};
-
 	// Setup our Gelatin namespace
 	var Gelatin = root.Gelatin = {};
-
-
-	/**
-	 * Generates a uniqui id
-	 *
-	 * @param {String} - Prefix the id
-	 */
-	var curCid = 0;
-	var getCid = function (prefix) {
-		return String.uniqueID();
-	};
 
 
 	var getPath = Gelatin.getPath = function (path, context) {
@@ -81,63 +66,6 @@
 	};
 
 
-	var Observerable = new Class({
-		Extends: Events,
-		_previousAttributes: {}
-	});
-
-
-	var hasObservers = function (obj) {
-		return typeOf(obj['$events']) == 'object';
-	};
-
-	var addObserver = Gelatin.addObserver = function (obj, key, fn) {
-		if (!hasObservers(obj)) {
-			Object.append(obj, new Observerable);
-
-			if (key !== '*')
-				obj._previousAttributes[key] = get(obj, key);
-		}
-
-		obj.addEvent((key === '*' ? key : 'change:' + key), fn);
-	};
-
-	var triggerObservers = Gelatin.triggerObservers = function (obj, key) {
-		if (!hasObservers(obj)) return false;
-
-		var old = obj._previousAttributes[key];
-		var value = get(obj, key);
-
-		if (old !== value) {
-			obj._previousAttributes[key] = value;
-			obj.fireEvent('*', [key, value, old]);
-			obj.fireEvent('change:' + key, [key, value, old]);
-		}
-	};
-
-
-	var ComputedProperty = Gelatin.ComputedProperty = new Class({
-		initialize: function (func) {
-			this.func = func;
-		},
-
-		get: function (obj, key) {
-			return this.func.call(obj, key);		
-		},
-
-		set: function (obj, key, value) {
-			return this.func.call(obj, key, value);
-		}
-	});
-	new Type('ComputedProperty', ComputedProperty);
-
-	Function.implement('computed', function () {
-		var props = Array.from(arguments);
-
-		var cp = new ComputedProperty(this);
-
-		return cp;
-	});
 
 
 

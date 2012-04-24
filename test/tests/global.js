@@ -28,17 +28,6 @@ describe('global gelatin helpers and classes', function () {
 			done();
 		});
 
-		it('should call setUnknown for undefined keys', function (done) {
-			var obj = {
-				setUnknown: function (key, value) {
-					return key+value;
-				}
-			};
-
-			var value = Gelatin.set(obj, 'foo', 'bar');
-			expect(value).to.eql('foobar');
-			done();
-		});
 	});
 
 	describe('set', function () {
@@ -55,6 +44,18 @@ describe('global gelatin helpers and classes', function () {
 			Gelatin.set(obj, 'test', 'test');
 			expect(Gelatin.get(obj, 'test')).to.eql('test');
 			done();
+		});
+
+		it('should call setUnknown for undefined keys', function (done) {
+			var obj = {
+				setUnknown: function (key, value) {
+					expect(key).to.eql('foo');
+					expect(value).to.eql('bar');
+					done();
+				}
+			};
+
+			var value = Gelatin.set(obj, 'foo', 'bar');
 		});
 	});
 
@@ -143,27 +144,19 @@ describe('global gelatin helpers and classes', function () {
 
 
 		describe('Observers', function (done) {
-			it('should mixin Events when observering an object', function (done) {
-				var obj = {};
+			it('should have observerable properties', function (done) {
+				var obj = {
+					fname: 'bar'
+				};
 
-				expect(obj).to.not.have.property('$events');
-
-				Gelatin.addObserver(obj, 'name', function() {});
-
-				expect(obj).to.have.property('$events');
-
-				done();
-			});
-
-			it('should add an event handler to the objects $events property when calling addObserver', function (done) {
-				var obj = {};
-
-				Gelatin.addObserver(obj, 'name', function () {
+				Gelatin.addObserver(obj, 'fname', function (key, newValue, oldValue) {
+					expect(key).to.eql('fname');
+					expect(newValue).to.eql('foo');
+					expect(oldValue).to.eql('bar');
+					done();
 				});
 
-				console.log(obj.$events);
-				done();
-
+				set(obj, 'fname', 'foo');
 			});
 		});
 	});
