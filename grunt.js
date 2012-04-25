@@ -7,7 +7,10 @@ module.exports = function (grunt) {
 			// DATA
 			'<%= dirs.src %>data/store.js',
 			'<%= dirs.src %>data/model.js',
-			'<%= dirs.src %>data/model-array.js'
+			'<%= dirs.src %>data/model-array.js',
+
+			// VIEW
+			'<%= dirs.src %>views/view.js'
 		];
 
 	grunt.initConfig({

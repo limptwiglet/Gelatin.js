@@ -1,6 +1,12 @@
 // Setup our Gelatin namespace
 var Gelatin = {};
 
+/**
+ * Returns the path to a given dot seperated string
+ *
+ * @param {String} - The path to the property
+ * @param {Object} - The context to search from, the default is window
+ */
 var getPath = Gelatin.getPath = function (path, context) {
 	context = context || window;	
 	path = ~path.indexOf('.') ? path.split('.') : false;
@@ -41,7 +47,13 @@ var get = Gelatin.get = function (obj, key) {
 	return value;
 };
 
-
+/**
+ * Sets a properties value
+ *
+ * @param {Object} - The target object
+ * @param {String} - Key name of the property we are settings
+ * @param {Mixed} - The value
+ */
 var set = Gelatin.set = function (obj, key, value) {
 	var oldValue = get(obj, key);
 
@@ -72,10 +84,13 @@ Gelatin.checkObservers = function (obj, key, newValue, oldValue) {
 	var objId = get(obj, '_observerId');
 	var observers = get(Gelatin.observers, objId);
 
-	if (!observers || !observers[key]) return;
+	if (!observers) return;
 
-	Gelatin.notifyObservers(obj, observers[key], key, newValue, oldValue);
-	Gelatin.notifyObservers(obj, observers['*'], key, newValue, oldValue);
+	if (observers[key])
+		Gelatin.notifyObservers(obj, observers[key], key, newValue, oldValue);
+
+	if (observers['*'])
+		Gelatin.notifyObservers(obj, observers['*'], key, newValue, oldValue);
 };
 
 Gelatin.notifyObservers = function (obj, observers, key, newValue, oldValue) {
