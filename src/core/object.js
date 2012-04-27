@@ -3,21 +3,30 @@
  * are accessed via the provided get and set methods
  */
 var Obj = Gelatin.Object = new Class({
-	// TODO: Remove meta properties this shouldnt be needed especially
-	// for hasChanged
-	meta: {
-		hasChanged: false
+	Implements: Options,
+
+	options: {
+		bindings: {}
 	},
 
 	/**
 	 * Constructor function accepts properties that you want to set
 	 * when creating the object
 	 */
-	initialize: function (props) {
+	initialize: function (props, options) {
+		this.setOptions(options);
 		Object.append(this, props);
-		this._prevAttrs = {};
+
+		this.initBindings(this.options.bindings);
 
 		return this;
+	},
+
+	initBindings: function (bindings) {
+		Object.each(bindings, function (path, key) {
+			new Gelatin.Binding({ from: path, to: key, toContext: this});
+		}.bind(this));
+		console.log('after binding setup', this);
 	},
 
 	/**
@@ -67,27 +76,6 @@ var Obj = Gelatin.Object = new Class({
 
 	addObserver: function (key, fn) {
 		Gelatin.addObserver(this, key, fn);
-	},
-
-	/**
-	 * Triggers event handlers for the passed in keys
-	 *
-	 * @params {String} - Keys to trigger events for
-	 */
-	triggerChange: function () {
-		var keys = Array.from(arguments);
-
-		keys.each(function (key) {
-			var name = 'change:'+key;
-
-			if (name in this.$events) {
-				// TODO: This is stupid, need to change this to native moo 
-				// event triggering
-				this.$events[name].each(function (e) {
-					e(key, this.get(key), get(this, '_prevAttrs.'+key));
-				}.bind(this));
-			}
-		}.bind(this));
 	}
 });
 

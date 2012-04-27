@@ -17,11 +17,15 @@ Gelatin.Binding = new Class({
 		this.setupObservers();
 	},
 
-	setupObservers: function () {
-		var o = this.options;
+	setupObservers: function (o) {
+		o = o || this.options;
 
 		var from = this.getPathToProperty(o.from, o.fromContext);
 		var to = this.getPathToProperty(o.to, o.toContext);
+
+		set(to.obj, to.property, get(from.obj, from.property));
+
+		to.obj['omg'] = 'why wont you work';
 
 		Gelatin.addObserver(from.obj, from.property, function (key, value) {
 			set(to.obj, to.property, value);
@@ -45,4 +49,9 @@ Gelatin.Binding = new Class({
 
 		return ret;
 	}
+});
+
+
+Gelatin.Binding.extend('doit', function (o) {
+	new Gelatin.Binding(o);
 });

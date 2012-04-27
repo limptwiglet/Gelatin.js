@@ -1,8 +1,12 @@
 module.exports = function (grunt) {
 	var FILES = [
+			// HELPERS AND EXTENSIONS
+			'<%= dirs.src %>core/mutators.js',
+
 			// CORE
 			'<%= dirs.src %>core/core.js',
 			'<%= dirs.src %>core/object.js',
+			'<%= dirs.src %>core/binding.js',
 
 			// DATA
 			'<%= dirs.src %>data/store.js',

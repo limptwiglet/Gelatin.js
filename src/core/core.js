@@ -9,7 +9,7 @@ var Gelatin = {};
  */
 var getPath = Gelatin.getPath = function (path, context) {
 	context = context || window;	
-	path = ~path.indexOf('.') ? path.split('.') : false;
+	path =  path.split('.');
 
 	var root = context;
 
@@ -104,7 +104,7 @@ Gelatin.notifyObservers = function (obj, observers, key, newValue, oldValue) {
 
 Gelatin.addObserver = function (obj, key, fn) {
 	var objId = get(obj, '_observerId');
-	
+
 	if (!objId) {
 		objId = set(obj, '_observerId', String.uniqueID());
 		observers = set(Gelatin.observers, objId, {'*': []});
@@ -118,6 +118,9 @@ Gelatin.addObserver = function (obj, key, fn) {
 
 	observers[key].push(fn);
 };
+
+Function.implement('observer', function () {
+});
 
 
 var ComputedProperty = Gelatin.ComputedProperty = new Class({
@@ -163,6 +166,7 @@ var Enumerable = Gelatin.Enumerable = new Class({
 
 	push: function (item) {
 		var content = get(this, 'content');
+		content = content.slice();
 		content.push(item);
 		set(this, 'content', content);
 	},
@@ -174,8 +178,8 @@ var Enumerable = Gelatin.Enumerable = new Class({
 	remove: function (item) {
 		var idx = this.indexOf(item);
 		var content = get(this, 'content');
-
 		content.splice(idx, 1);
+		content = content.slice();
 		set(this, 'content', content);
 	}
 });

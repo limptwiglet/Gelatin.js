@@ -263,6 +263,8 @@ Gelatin.Store = new Class({
 		var modelMap = this.getModelMap(Model);
 		var m = get(this.records, cId);
 
+		if (m === undefined) return;
+
 		modelMap.modelArrays.each(function (array) {
 			var filter = get(array, 'filter');
 

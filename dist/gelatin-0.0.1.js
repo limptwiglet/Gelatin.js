@@ -1,3 +1,18 @@
+//Class.Mutators.Bindings = function (items) {
+	//Object.each(items, function (path, prop) {
+		//path = path.split('.');
+		//var targEnd = path.pop();
+		//path = path.join('.');
+
+		//var targ = getPath(path);
+
+		//Gelatin.addObserver(targ, targEnd, function (key, value) {
+			//console.log(this);
+			//Gelatin.set(this, 'change', 'YUS');
+		//}.bind(this));
+	//}.bind(this));
+//};
+
 // Setup our Gelatin namespace
 var Gelatin = {};
 
@@ -9,7 +24,7 @@ var Gelatin = {};
  */
 var getPath = Gelatin.getPath = function (path, context) {
 	context = context || window;	
-	path = ~path.indexOf('.') ? path.split('.') : false;
+	path =  path.split('.');
 
 	var root = context;
 
@@ -104,7 +119,7 @@ Gelatin.notifyObservers = function (obj, observers, key, newValue, oldValue) {
 
 Gelatin.addObserver = function (obj, key, fn) {
 	var objId = get(obj, '_observerId');
-	
+
 	if (!objId) {
 		objId = set(obj, '_observerId', String.uniqueID());
 		observers = set(Gelatin.observers, objId, {'*': []});
@@ -118,6 +133,9 @@ Gelatin.addObserver = function (obj, key, fn) {
 
 	observers[key].push(fn);
 };
+
+Function.implement('observer', function () {
+});
 
 
 var ComputedProperty = Gelatin.ComputedProperty = new Class({
@@ -163,6 +181,7 @@ var Enumerable = Gelatin.Enumerable = new Class({
 
 	push: function (item) {
 		var content = get(this, 'content');
+		content = content.slice();
 		content.push(item);
 		set(this, 'content', content);
 	},
@@ -174,8 +193,8 @@ var Enumerable = Gelatin.Enumerable = new Class({
 	remove: function (item) {
 		var idx = this.indexOf(item);
 		var content = get(this, 'content');
-
 		content.splice(idx, 1);
+		content = content.slice();
 		set(this, 'content', content);
 	}
 });
@@ -185,21 +204,30 @@ var Enumerable = Gelatin.Enumerable = new Class({
  * are accessed via the provided get and set methods
  */
 var Obj = Gelatin.Object = new Class({
-	// TODO: Remove meta properties this shouldnt be needed especially
-	// for hasChanged
-	meta: {
-		hasChanged: false
+	Implements: Options,
+
+	options: {
+		bindings: {}
 	},
 
 	/**
 	 * Constructor function accepts properties that you want to set
 	 * when creating the object
 	 */
-	initialize: function (props) {
+	initialize: function (props, options) {
+		this.setOptions(options);
 		Object.append(this, props);
-		this._prevAttrs = {};
+
+		this.initBindings(this.options.bindings);
 
 		return this;
+	},
+
+	initBindings: function (bindings) {
+		Object.each(bindings, function (path, key) {
+			new Gelatin.Binding({ from: path, to: key, toContext: this});
+		}.bind(this));
+		console.log('after binding setup', this);
 	},
 
 	/**
@@ -249,30 +277,67 @@ var Obj = Gelatin.Object = new Class({
 
 	addObserver: function (key, fn) {
 		Gelatin.addObserver(this, key, fn);
-	},
-
-	/**
-	 * Triggers event handlers for the passed in keys
-	 *
-	 * @params {String} - Keys to trigger events for
-	 */
-	triggerChange: function () {
-		var keys = Array.from(arguments);
-
-		keys.each(function (key) {
-			var name = 'change:'+key;
-
-			if (name in this.$events) {
-				// TODO: This is stupid, need to change this to native moo 
-				// event triggering
-				this.$events[name].each(function (e) {
-					e(key, this.get(key), get(this, '_prevAttrs.'+key));
-				}.bind(this));
-			}
-		}.bind(this));
 	}
 });
 
+
+Gelatin.Binding = new Class({
+	Implements: Options,
+
+	options: {
+		oneWay: false,
+
+		fromContext: null,
+		from: '',
+
+		to: '',
+		toContext: null
+	},
+
+	initialize: function (options) {
+		this.setOptions(options);
+
+		this.setupObservers();
+	},
+
+	setupObservers: function (o) {
+		o = o || this.options;
+
+		var from = this.getPathToProperty(o.from, o.fromContext);
+		var to = this.getPathToProperty(o.to, o.toContext);
+
+		set(to.obj, to.property, get(from.obj, from.property));
+
+		to.obj['omg'] = 'why wont you work';
+
+		Gelatin.addObserver(from.obj, from.property, function (key, value) {
+			set(to.obj, to.property, value);
+		});
+
+		if (!o.oneWay) {
+			Gelatin.addObserver(to.obj, to.property, function (key, value) {
+				set(from.obj, from.property, value);
+			});
+		}
+	},
+
+	getPathToProperty: function(target, context) {
+		var ret = {obj: context, property: target};
+
+		if (!context) {
+			var parts = target.split('.');
+			ret.property = parts.pop();
+			ret.obj = getPath(parts.join('.'));
+		}
+
+		return ret;
+	}
+});
+
+
+Gelatin.Binding.extend('doit', function (o) {
+	new Gelatin.Binding(o);
+});
 
 /**
  * A data store class for handling updating models via an adapter
@@ -538,6 +603,8 @@ Gelatin.Store = new Class({
 	updateModelArrays: function (Model, cId) {
 		var modelMap = this.getModelMap(Model);
 		var m = get(this.records, cId);
+
+		if (m === undefined) return;
 
 		modelMap.modelArrays.each(function (array) {
 			var filter = get(array, 'filter');
