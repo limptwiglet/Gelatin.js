@@ -225,9 +225,8 @@ var Obj = Gelatin.Object = new Class({
 
 	initBindings: function (bindings) {
 		Object.each(bindings, function (path, key) {
-			new Gelatin.Binding({ from: path, to: key, toContext: this});
+			Gelatin.binding({ from: path, to: key, toContext: this});
 		}.bind(this));
-		console.log('after binding setup', this);
 	},
 
 	/**
@@ -281,63 +280,34 @@ var Obj = Gelatin.Object = new Class({
 });
 
 
-Gelatin.Binding = new Class({
-	Implements: Options,
+Gelatin.binding = function (o) {
+	var from = Gelatin.binding.getPathToProperty(o.from, o.fromContext);
+	var to = Gelatin.binding.getPathToProperty(o.to, o.toContext);
 
-	options: {
-		oneWay: false,
+	set(to.obj, to.property, get(from.obj, from.property));
 
-		fromContext: null,
-		from: '',
+	Gelatin.addObserver(from.obj, from.property, function (key, value) {
+		set(to.obj, to.property, value);
+	});
 
-		to: '',
-		toContext: null
-	},
-
-	initialize: function (options) {
-		this.setOptions(options);
-
-		this.setupObservers();
-	},
-
-	setupObservers: function (o) {
-		o = o || this.options;
-
-		var from = this.getPathToProperty(o.from, o.fromContext);
-		var to = this.getPathToProperty(o.to, o.toContext);
-
-		set(to.obj, to.property, get(from.obj, from.property));
-
-		to.obj['omg'] = 'why wont you work';
-
-		Gelatin.addObserver(from.obj, from.property, function (key, value) {
-			set(to.obj, to.property, value);
+	if (!o.oneWay) {
+		Gelatin.addObserver(to.obj, to.property, function (key, value) {
+			set(from.obj, from.property, value);
 		});
-
-		if (!o.oneWay) {
-			Gelatin.addObserver(to.obj, to.property, function (key, value) {
-				set(from.obj, from.property, value);
-			});
-		}
-	},
-
-	getPathToProperty: function(target, context) {
-		var ret = {obj: context, property: target};
-
-		if (!context) {
-			var parts = target.split('.');
-			ret.property = parts.pop();
-			ret.obj = getPath(parts.join('.'));
-		}
-
-		return ret;
 	}
-});
+};
 
+Gelatin.binding.getPathToProperty = function (target, context) {
+	var ret = {obj: context, property: target};
 
-Gelatin.Binding.extend('doit', function (o) {
-	new Gelatin.Binding(o);
-});
+	if (!context) {
+		var parts = target.split('.');
+		ret.property = parts.pop();
+		ret.obj = getPath(parts.join('.'));
+	}
+
+	return ret;
+};
 
 /**
  * A data store class for handling updating models via an adapter

@@ -24,9 +24,8 @@ var Obj = Gelatin.Object = new Class({
 
 	initBindings: function (bindings) {
 		Object.each(bindings, function (path, key) {
-			new Gelatin.Binding({ from: path, to: key, toContext: this});
+			Gelatin.binding({ from: path, to: key, toContext: this});
 		}.bind(this));
-		console.log('after binding setup', this);
 	},
 
 	/**
