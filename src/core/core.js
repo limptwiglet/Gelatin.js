@@ -119,8 +119,14 @@ Gelatin.addObserver = function (obj, key, fn) {
 	observers[key].push(fn);
 };
 
-Function.implement('observer', function () {
-});
+
+Gelatin.removeObservers = function (obj, key, fn) {
+	var objId = get(obj, '_observerId');
+
+	if (!key) {
+		delete Gelatin.observers[objId]
+	}
+};
 
 
 var ComputedProperty = Gelatin.ComputedProperty = new Class({

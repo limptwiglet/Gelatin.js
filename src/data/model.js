@@ -32,6 +32,8 @@ Gelatin.Model = new Class({
 		if (store) {
 			store.destroy(this.$constructor, cId);
 		}
+
+		this.parent();
 	}
 });
 new Type('Model', Gelatin.Model);

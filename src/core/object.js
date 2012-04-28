@@ -83,6 +83,10 @@ var Obj = Gelatin.Object = new Class({
 
 	addObserver: function (key, fn) {
 		Gelatin.addObserver(this, key, fn);
+	},
+
+	destroy: function () {
+		Gelatin.removeObservers(this);
 	}
 });
 

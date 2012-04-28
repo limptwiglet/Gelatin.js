@@ -134,8 +134,14 @@ Gelatin.addObserver = function (obj, key, fn) {
 	observers[key].push(fn);
 };
 
-Function.implement('observer', function () {
-});
+
+Gelatin.removeObservers = function (obj, key, fn) {
+	var objId = get(obj, '_observerId');
+
+	if (!key) {
+		delete Gelatin.observers[objId]
+	}
+};
 
 
 var ComputedProperty = Gelatin.ComputedProperty = new Class({
@@ -229,6 +235,10 @@ var Obj = Gelatin.Object = new Class({
 		return this;
 	},
 
+	/**
+	 * init function is an overridable method that is called once object 
+	 * initialization is done
+	 */
 	init: function () {},
 
 	initBindings: function (bindings) {
@@ -284,6 +294,10 @@ var Obj = Gelatin.Object = new Class({
 
 	addObserver: function (key, fn) {
 		Gelatin.addObserver(this, key, fn);
+	},
+
+	destroy: function () {
+		Gelatin.removeObservers(this);
 	}
 });
 
@@ -678,6 +692,8 @@ Gelatin.Model = new Class({
 		if (store) {
 			store.destroy(this.$constructor, cId);
 		}
+
+		this.parent();
 	}
 });
 new Type('Model', Gelatin.Model);
