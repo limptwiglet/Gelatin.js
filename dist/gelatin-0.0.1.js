@@ -179,6 +179,10 @@ var Enumerable = Gelatin.Enumerable = new Class({
 		});
 	},
 
+	setEach: function () {
+
+	},
+
 	push: function (item) {
 		var content = get(this, 'content');
 		content = content.slice();
@@ -220,8 +224,12 @@ var Obj = Gelatin.Object = new Class({
 
 		this.initBindings(this.options.bindings);
 
+		this.init();
+
 		return this;
 	},
+
+	init: function () {},
 
 	initBindings: function (bindings) {
 		Object.each(bindings, function (path, key) {

@@ -164,6 +164,10 @@ var Enumerable = Gelatin.Enumerable = new Class({
 		});
 	},
 
+	setEach: function () {
+
+	},
+
 	push: function (item) {
 		var content = get(this, 'content');
 		content = content.slice();

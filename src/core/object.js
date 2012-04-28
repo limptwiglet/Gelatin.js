@@ -19,8 +19,16 @@ var Obj = Gelatin.Object = new Class({
 
 		this.initBindings(this.options.bindings);
 
+		this.init();
+
 		return this;
 	},
+
+	/**
+	 * init function is an overridable method that is called once object 
+	 * initialization is done
+	 */
+	init: function () {},
 
 	initBindings: function (bindings) {
 		Object.each(bindings, function (path, key) {
