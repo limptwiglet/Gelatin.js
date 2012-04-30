@@ -741,62 +741,84 @@ Gelatin.ModelArray = new Class({
 	}
 });
 
-Gelatin.View = new Class({
-	Implements: [Options],
+var View = Gelatin.View = new Class({
+	Extends: Gelatin.Object,
 
 	options: {
-		tagName: 'div',
-		id: ''
+		tag: 'div',
+		attributes: {},
+
+		events: { }
 	},
 
-	initialize: function(options) {
-		this.setOptions(options);
-		this.el;
+	hasRendered: false,
+
+	inject: function () {
 		this.render();
+		this.el.inject.apply(this.el, Array.from(arguments));
 	},
 
-	render: function(options) {
-		this.setOptions(options);
-		this.el = new Element(this.options.tagName, {
-			id: this.options.id
+	_render: function () {
+		if (get(this, 'hasRendered')) return;
 
-		});
+		this.el = new Element(this.options.tag, this.options.attributes);
 
-		return this;
+		Object.each(this.options.events, function (value, key) {
+			this.el.addEvent(key, this[value].bind(this));
+		}.bind(this));
+
+		set(this, 'hasRendered', true);
 	},
 
-	remove: function() {			
-		this.el.dispose();
-
-		return this;
+	render: function () {
+		this._render();
 	},
 
-	inject: function(root) {		
-		this.el.inject(root);
-
-		return this;
+	destroy: function () {
+		this.el.destroy();		
+		this.parent();
 	}
 });
 
-Gelatin.View.Button = new Class({
-	Extends: Gelatin.View,
 
-	options: {
-		className: 'button',
-		tagName: 'a',
-		href: '#'
+var CollectionView = Gelatin.CollectionView = new Class({
+	Extends: View,
+
+	childViews: [],
+
+	initialize: function (props, options) {
+		this.parent(props, options);
+		this.addObserver('content', this._contentChange.bind(this));
 	},
 
-	render: function(options) {
-		this.setOptions(options);
-		this.el = new Element(this.options.tagName, {
-			id: this.options.id,
-			'class': this.options.className,
-			href: this.options.href
-		});
+	_contentChange: function (key, newValue, oldValue) {
+		var views = this.childViews;
+
+		while(views.length) {
+			views.pop().destroy();
+		}
+
+		this._renderItems();
+	},
+
+	_renderItems: function () {
+		var items = get(this, 'content');
 		
-		return this;
+		items.each(function (item) {
+			this.childViews.push(this._renderItem(item));
+		}.bind(this));
+	},
+
+	_renderItem: function (item) {
+		var view = new this.options.itemView({ content: item });
+		view.inject(this.el);
+
+		return view;
+	},
+
+	_render: function () {
+		this.parent();	
+		this._renderItems();
 	}
 });
-
 })();
