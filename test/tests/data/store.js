@@ -1,6 +1,3 @@
-var get = Gelatin.get;
-var set = Gelatin.set;
-
 describe('Store', function () {
 	it('should be able to create a store', function (done) {
 		var store = new Gelatin.Store();
@@ -444,53 +441,5 @@ describe('Store', function () {
 		expect(store.dirtyRecords).to.have.property(cId);
 
 		store.save();
-	});
-});
-
-
-describe('Model', function () {
-	it('should have a data attribute that returns clean data', function (done) {
-		var Model = new Class({
-			Extends: Gelatin.Model,
-
-			attributes: {
-				fname: { type: 'string' },
-				sname: { type: 'string' }
-			}
-		});
-
-		var oD = {
-			fname: 'Foo',
-			sname: 'Bar'
-		};
-
-		var m = new Model(oD);
-
-		var d = m.get('data');
-		expect(d).to.eql(oD);
-		done();
-	});
-});
-
-
-describe('RESTTransport', function () {
-	it('should make ajax call to find a single model /api/model/1', function (done) {
-		var store = new Gelatin.Store({
-			transport: new Gelatin.RESTTransport({
-				baseUrl: '/api'
-			})
-		});
-
-		var Model = new Class({
-			Extends: Gelatin.Model,
-
-			url: '/model'
-		});
-
-		var m = store.find(Model, 1);
-		var m = store.findAll(Model);
-		var m = store.query(Model, { name: 'test', age: 'test' });
-
-		done();
 	});
 });
