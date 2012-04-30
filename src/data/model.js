@@ -16,7 +16,7 @@ Gelatin.Model = new Class({
 	attributes: {},
 
 	initialize: function (props, options) {
-		props = this.initData(props);
+		props = this.initData(props || {});
 		this.parent(props, options);
 	},
 
