@@ -1,3 +1,5 @@
+var fs = require('fs');
+
 module.exports = function (grunt) {
 	var FILES = [
 			// HELPERS AND EXTENSIONS
@@ -36,14 +38,31 @@ module.exports = function (grunt) {
 			}
 		},
 
+		min: {
+			dist: {
+				src: '<%= concat.dist.dest %>',
+				dest: '<%= dirs.dest %>gelatin-<%= pkg.version %>-min.js'
+			}
+		},
+
 		watch: {
 			files: FILES,
-			tasks: 'concat:dist'
+			tasks: ['concat:dist', 'wrap' 'min:dist']
+		},
+
+		wrap: {
+			src: '<%= concat.dist.dest %>'
 		}
+	});
+
+
+	grunt.registerMultiTask('wrap', 'Wraps the gelatin source in a closure', function () {
+		var data = fs.readFileSync(this.file.src, 'utf8')
+		fs.writeFileSync(this.file.src, '(function() {' + data + '})();', 'utf8');
 	});
 
 
 	grunt.registerTask('default', 'lint');
 
-	grunt.registerTask('build', 'concat:dist');
+	grunt.registerTask('build', ['concat:dist', 'wrap', 'min:dist']);
 };

@@ -1,4 +1,4 @@
-//Class.Mutators.Bindings = function (items) {
+(function() {//Class.Mutators.Bindings = function (items) {
 	//Object.each(items, function (path, prop) {
 		//path = path.split('.');
 		//var targEnd = path.pop();
@@ -768,3 +768,4 @@ Gelatin.View.Button = new Class({
 	}
 });
 
+})();
