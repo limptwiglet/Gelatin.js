@@ -47,7 +47,7 @@ module.exports = function (grunt) {
 
 		watch: {
 			files: FILES,
-			tasks: ['concat:dist', 'wrap' 'min:dist']
+			tasks: ['concat:dist', 'wrap', 'min:dist']
 		},
 
 		wrap: {
