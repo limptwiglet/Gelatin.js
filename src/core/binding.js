@@ -1,5 +1,5 @@
-Gelatin.binding = function (o) {
-	var from = Gelatin.binding.getPathToProperty(o.from, o.fromContext);
+var binding = Gelatin.binding = function (o) {
+	var from = binding.getPathToProperty(o.from, o.fromContext);
 	var to = Gelatin.binding.getPathToProperty(o.to, o.toContext);
 
 	set(to.obj, to.property, get(from.obj, from.property));
@@ -15,7 +15,7 @@ Gelatin.binding = function (o) {
 	}
 };
 
-Gelatin.binding.getPathToProperty = function (target, context) {
+binding.getPathToProperty = function (target, context) {
 	var ret = {obj: context, property: target};
 
 	if (!context) {

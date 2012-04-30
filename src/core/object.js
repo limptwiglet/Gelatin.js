@@ -25,16 +25,20 @@ var Obj = Gelatin.Object = new Class({
 	},
 
 	/**
-	 * init function is an overridable method that is called once object 
-	 * initialization is done
+	 * Sets up any bindings defined in the options object
 	 */
-	init: function () {},
-
 	initBindings: function (bindings) {
 		Object.each(bindings, function (path, key) {
 			Gelatin.binding({ from: path, to: key, toContext: this});
 		}.bind(this));
 	},
+
+
+	/**
+	 * init function is an overridable method that is called once object 
+	 * initialization is done
+	 */
+	init: function () {},
 
 	/**
 	 * Returns a property set on this class
@@ -70,17 +74,21 @@ var Obj = Gelatin.Object = new Class({
 	 * by iterating over the object keys callong set
 	 *
 	 * @param {Object} - A hash of properties and values to set
-	 * @param {Boolean} - Slient flag
 	 */
-	setProperties: function (obj, silent) {
+	setProperties: function (obj) {
 		var keys = Object.keys(obj);
 
 		keys.each(function (key) {
-			this.set(key, obj[key], true);	
+			this.set(key, obj[key]);	
 		}.bind(this));
 	},
 
-
+	/**
+	 * Convenience method for adding an observer to this object
+	 *
+	 * @key {String} - The key to observer
+	 * @fn {Function} - The observer function
+	 */
 	addObserver: function (key, fn) {
 		Gelatin.addObserver(this, key, fn);
 	},

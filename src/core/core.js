@@ -1,5 +1,5 @@
 // Setup our Gelatin namespace
-var Gelatin = {};
+var Gelatin = this.Gelatin = {};
 
 /**
  * Returns the path to a given dot seperated string

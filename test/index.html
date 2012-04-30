@@ -14,10 +14,18 @@
 			ui: 'bdd',
 			ignoreLeaks: true
 		});
+		
+		var expect = chai.expect;
+		var get = Gelatin.get;
+		var set = Gelatin.set;
 	</script>
-	<script src="tests/global.js"></script>
-	<script src="tests/view.js"></script>
-	<script src="tests/model.js"></script>
+	<script src="tests/core/get-set.js"></script>
+	<script src="tests/core/computed-properties.js"></script>
+	<script src="tests/core/observers.js"></script>
+	<script src="tests/core/object.js"></script>
+
+	<script src="tests/data/model.js"></script>
+
 	<script>
 		window.onload = function () {
 			mocha.run({

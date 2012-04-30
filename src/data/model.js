@@ -15,6 +15,29 @@ Gelatin.Model = new Class({
 	// Hash containing model attributes
 	attributes: {},
 
+	initialize: function (props, options) {
+		props = this.initData(props);
+		this.parent(props, options);
+	},
+
+	initData: function (data) {
+		var def;
+
+		for (var key in this.attributes) {
+			def = this.attributes[key];
+
+			if (typeOf(def) === 'object' && def.value) {
+				def = def.value;
+			}
+
+			if (!(key in data)) {
+				data[key] = def;	
+			}
+		}
+
+		return data;
+	},
+
 	data: function () {
 		var obj = {};
 

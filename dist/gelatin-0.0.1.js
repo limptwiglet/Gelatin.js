@@ -14,7 +14,7 @@
 //};
 
 // Setup our Gelatin namespace
-var Gelatin = {};
+var Gelatin = this.Gelatin = {};
 
 /**
  * Returns the path to a given dot seperated string
@@ -236,16 +236,20 @@ var Obj = Gelatin.Object = new Class({
 	},
 
 	/**
-	 * init function is an overridable method that is called once object 
-	 * initialization is done
+	 * Sets up any bindings defined in the options object
 	 */
-	init: function () {},
-
 	initBindings: function (bindings) {
 		Object.each(bindings, function (path, key) {
 			Gelatin.binding({ from: path, to: key, toContext: this});
 		}.bind(this));
 	},
+
+
+	/**
+	 * init function is an overridable method that is called once object 
+	 * initialization is done
+	 */
+	init: function () {},
 
 	/**
 	 * Returns a property set on this class
@@ -281,17 +285,21 @@ var Obj = Gelatin.Object = new Class({
 	 * by iterating over the object keys callong set
 	 *
 	 * @param {Object} - A hash of properties and values to set
-	 * @param {Boolean} - Slient flag
 	 */
-	setProperties: function (obj, silent) {
+	setProperties: function (obj) {
 		var keys = Object.keys(obj);
 
 		keys.each(function (key) {
-			this.set(key, obj[key], true);	
+			this.set(key, obj[key]);	
 		}.bind(this));
 	},
 
-
+	/**
+	 * Convenience method for adding an observer to this object
+	 *
+	 * @key {String} - The key to observer
+	 * @fn {Function} - The observer function
+	 */
 	addObserver: function (key, fn) {
 		Gelatin.addObserver(this, key, fn);
 	},
@@ -302,8 +310,8 @@ var Obj = Gelatin.Object = new Class({
 });
 
 
-Gelatin.binding = function (o) {
-	var from = Gelatin.binding.getPathToProperty(o.from, o.fromContext);
+var binding = Gelatin.binding = function (o) {
+	var from = binding.getPathToProperty(o.from, o.fromContext);
 	var to = Gelatin.binding.getPathToProperty(o.to, o.toContext);
 
 	set(to.obj, to.property, get(from.obj, from.property));
@@ -319,7 +327,7 @@ Gelatin.binding = function (o) {
 	}
 };
 
-Gelatin.binding.getPathToProperty = function (target, context) {
+binding.getPathToProperty = function (target, context) {
 	var ret = {obj: context, property: target};
 
 	if (!context) {
@@ -674,6 +682,29 @@ Gelatin.Model = new Class({
 
 	// Hash containing model attributes
 	attributes: {},
+
+	initialize: function (props, options) {
+		props = this.initData(props);
+		this.parent(props, options);
+	},
+
+	initData: function (data) {
+		var def;
+
+		for (var key in this.attributes) {
+			def = this.attributes[key];
+
+			if (typeOf(def) === 'object' && def.value) {
+				def = def.value;
+			}
+
+			if (!(key in data)) {
+				data[key] = def;	
+			}
+		}
+
+		return data;
+	},
 
 	data: function () {
 		var obj = {};
