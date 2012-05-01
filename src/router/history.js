@@ -1,0 +1,2 @@
+Gelatin.history = (function () {
+})();

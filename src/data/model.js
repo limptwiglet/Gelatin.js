@@ -26,7 +26,7 @@ Gelatin.Model = new Class({
 		for (var key in this.attributes) {
 			def = this.attributes[key];
 
-			if (typeOf(def) === 'object' && def.value) {
+			if (typeOf(def) === 'object' && def.value !== undefined) {
 				def = def.value;
 			}
 

@@ -4,7 +4,8 @@ describe('Model', function () {
 
 		attributes: {
 			name: 'Bill',
-			age: { value: 2 }
+			age: { value: 2 },
+			bool: { value: false }
 		}
 	});
 
@@ -20,10 +21,14 @@ describe('Model', function () {
 			age: 4
 		});
 
-		console.log(m);
+		var m2 = new MyModel({
+			bool: true
+		});
 
 		expect(m.name).to.eql('Bill');
 		expect(m.age).to.eql(4);
+		expect(m.bool).to.be.false;
+		expect(m2.bool).to.be.true;
 
 		done();
 	});
