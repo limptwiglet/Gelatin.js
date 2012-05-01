@@ -16,7 +16,11 @@ module.exports = function (grunt) {
 			'<%= dirs.src %>data/model-array.js',
 
 			// VIEW
-			'<%= dirs.src %>views/view.js'
+			'<%= dirs.src %>views/view.js',
+
+			// ROUTER
+			'<%= dirs.src %>router/history.js',
+			'<%= dirs.src %>router/router.js'
 		];
 
 	grunt.initConfig({
