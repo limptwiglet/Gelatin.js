@@ -855,6 +855,7 @@ Gelatin.Router = new Class({
 	options: {},
 
 	initialize: function (routes, options) {
+		this.currentRoute = null;
 		this.routes = routes;
 	},
 
@@ -875,8 +876,25 @@ Gelatin.Router = new Class({
 			}
 
 			if (match[0] === url) {
-				this.routes[r].apply(this.routes[r], match.slice(1));
+				this.callRoute(this.routes[r], match.slice(1));
 			}
+		}
+	},
+
+	callRoute: function(route, params) {
+		var fns = [];
+
+		if (typeOf(route) === 'function') {
+			fns.push(route);
+		} else if (typeOf(route) === 'array') {
+			fns = fns.concat(route);	
+		} else if (route.on !== undefined) {
+			fns.push(route.on);
+		}
+
+		for (var i = 0, l = fns.length; i < l; i++) {
+			this.currentRoute = route;
+			fns[i].apply(this, params);
 		}
 	}
 });

@@ -34,7 +34,7 @@ describe('Router', function () {
 		var router = new Gelatin.Router({
 			'/project/:id': function (id) {
 				expect(id).to.exist;
-				expect(id).to.eql('1');
+				expect(id).to.eql('10');
 				done();
 			},
 
@@ -43,6 +43,6 @@ describe('Router', function () {
 			}
 		});
 
-		router.check('/project/111');
+		router.check('/project/10');
 	});
 });
