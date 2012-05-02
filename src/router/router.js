@@ -1,5 +1,6 @@
-var escapeMatch = /\//g;
-var paramMatch = /\:(\w+)/;
+var paramReg = /\:(\w+)/g;
+var qsReg = /\?([^\/]+)/g;
+var qsPartsReg = /([^\?=&]+)(=([^&]*))/;
 
 /**
  * Gelatin.Router class is used for application routing
@@ -20,13 +21,26 @@ Gelatin.Router = new Class({
 		var match = this.match(url);
 	},
 
+
+	extractQueryString: function(qs) {
+		var queryString = {};
+
+		qs.replace(qsPartsReg, function ($1, $2, $3, $4) {
+			queryString[$2] = $4; 
+		});
+
+		return queryString;
+	},
+
 	/**
 	 * Checks the passed in url against the routing object
 	 */
 	match: function (url) {
+		var qs = url.match(qsReg);
+
 		for (var r in this.routes) {
-			var routeParams = r.match(/:(\w+)/g);
-			var route = r.replace(/:\w+/g, '([^\/]+)');
+			var routeParams = r.match(paramReg);
+			var route = r.replace(paramReg, '([^\/]+)');
 
 			var match = url.match(new RegExp(route));
 
@@ -36,14 +50,20 @@ Gelatin.Router = new Class({
 
 			if (match[0] === url) {
 				this.callRoute(this.routes[r], match.slice(1), routeParams);
+			} else if (qs) {
+				var qs = this.extractQueryString(qs[0]);
+				this.callRoute(this.routes[r], match.slice(1), routeParams, qs);
 			}
 		}
 	},
 
-	callRoute: function(route, paramValues, paramNames) {
+	callRoute: function(route, paramValues, paramNames, qs) {
 		var fns = [];
-		var paramObj = {};
+		var paramObj = {
+		};
 
+		// Check if we have any param values so we can build the param object
+		// to pass to the router function
 		if (paramValues) {
 			for (var i = 0, l = paramValues.length; i < l; i++) {
 				if (paramNames[i]) {
@@ -62,7 +82,7 @@ Gelatin.Router = new Class({
 
 		for (var i = 0, l = fns.length; i < l; i++) {
 			this.currentRoute = route;
-			fns[i].call(this, paramObj);
+			fns[i].call(this, paramObj, qs);
 		}
 	}
 });

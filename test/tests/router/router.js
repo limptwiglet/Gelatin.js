@@ -71,7 +71,10 @@ describe('Router', function () {
 
 	it('should return query string parameters as an object', function (done) {
 		var router = new Gelatin.Router({
-			'/project': function () {
+			'/project': function (params, qs) {
+				expect(qs).to.exist;
+				expect(qs.test).to.exist;
+				expect(qs.test).to.eql('test');
 				done();
 			}
 		});
