@@ -4,22 +4,6 @@ var paramMatch = /\:(\w+)/;
 /**
  * Gelatin.Router class is used for application routing
  *
- * new Gelatin.Router({
- *     '/projects': {
- *			on: function () {
- *				// Run this when the route matches
- *			},
- *
- *			after: function () {
- *				// Run this when this route leaves
- *			},
- *
- *			'/:id': {
- *				on: function() {},
- *				after: function () {}
- *			}
- *     }
- * });
  */
 
 Gelatin.Router = new Class({
@@ -28,7 +12,7 @@ Gelatin.Router = new Class({
 	options: {},
 
 	initialize: function (routes, options) {
-		this.currentRoute = null;
+		this.currentRoute = null; // Marks which route is currently active
 		this.routes = routes;
 	},
 
@@ -36,10 +20,12 @@ Gelatin.Router = new Class({
 		var match = this.match(url);
 	},
 
+	/**
+	 * Checks the passed in url against the routing object
+	 */
 	match: function (url) {
-		var urlParts = url.replace('/', '').split('/');
-
 		for (var r in this.routes) {
+			var routeParams = r.match(/:(\w+)/g);
 			var route = r.replace(/:\w+/g, '([^\/]+)');
 
 			var match = url.match(new RegExp(route));
@@ -49,13 +35,22 @@ Gelatin.Router = new Class({
 			}
 
 			if (match[0] === url) {
-				this.callRoute(this.routes[r], match.slice(1));
+				this.callRoute(this.routes[r], match.slice(1), routeParams);
 			}
 		}
 	},
 
-	callRoute: function(route, params) {
+	callRoute: function(route, paramValues, paramNames) {
 		var fns = [];
+		var paramObj = {};
+
+		if (paramValues) {
+			for (var i = 0, l = paramValues.length; i < l; i++) {
+				if (paramNames[i]) {
+					paramObj[paramNames[i].replace(':', '')] = paramValues[i];
+				}
+			}
+		}
 
 		if (typeOf(route) === 'function') {
 			fns.push(route);
@@ -67,7 +62,7 @@ Gelatin.Router = new Class({
 
 		for (var i = 0, l = fns.length; i < l; i++) {
 			this.currentRoute = route;
-			fns[i].apply(this, params);
+			fns[i].call(this, paramObj);
 		}
 	}
 });
