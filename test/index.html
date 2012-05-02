@@ -12,7 +12,8 @@
 	<script>
 		mocha.setup({
 			ui: 'bdd',
-			ignoreLeaks: true
+			ignoreLeaks: true,
+			timeout: 500
 		});
 		
 		var expect = chai.expect;
